@@ -1,0 +1,17 @@
+<x-app-layout>
+    <x-slot name="header"><div><p class="eyebrow">CredAI control center</p><h1 class="page-title">System administration</h1><p class="page-subtitle">Monitor trust, funding decisions, partners, and verified activity from one place.</p></div></x-slot>
+    <div class="dashboard-shell admin-shell">
+        @if(session('status'))<div class="workspace-status">{{ session('status') }}</div>@endif
+        <section class="metric-grid" aria-label="System overview">
+            <article class="metric-card"><span class="metric-label">Registered users</span><strong>{{ number_format($userCount) }}</strong><span class="metric-note">All platform accounts</span></article>
+            <article class="metric-card metric-card--accent"><span class="metric-label">Businesses</span><strong>{{ number_format($businessCount) }}</strong><span class="metric-note">Business profiles</span></article>
+            <article class="metric-card"><span class="metric-label">Funding applications</span><strong>{{ number_format($applicationCount) }}</strong><span class="metric-note">{{ $pendingApplications }} awaiting action</span></article>
+            <article class="metric-card"><span class="metric-label">Partner approvals</span><strong>{{ $pendingProviders + $pendingHospitals }}</strong><span class="metric-note">Providers and hospitals pending</span></article>
+        </section>
+        <div class="admin-grid">
+            <section class="surface-card"><div class="section-heading"><div><span class="eyebrow">Funding pipeline</span><h3>Recent applications</h3></div><span class="status-pill status-pill--soft">{{ $pendingApplications }} pending</span></div>@forelse($applications as $application)<div class="admin-row"><div><strong>{{ $application->business_name }}</strong><small>{{ number_format($application->requested_amount, 0) }} requested · {{ $application->purpose }}</small></div><form method="POST" action="{{ route('admin.applications.status', $application->id) }}">@csrf @method('PATCH')<select name="status" onchange="this.form.submit()"><option value="{{ $application->status }}">{{ ucfirst(str_replace('_', ' ', $application->status)) }}</option><option value="under_review">Under review</option><option value="approved">Approve</option><option value="rejected">Reject</option><option value="funded">Funded</option></select></form></div>@empty<p class="empty-copy">No funding applications yet.</p>@endforelse</section>
+            <section class="surface-card"><div class="section-heading"><div><span class="eyebrow">Transaction monitor</span><h3>Latest evidence</h3></div><span class="status-pill status-pill--green">Verified flow</span></div>@forelse($transactions as $transaction)<div class="admin-row"><div><strong>{{ $transaction->business_name }}</strong><small>{{ $transaction->provider }} · {{ $transaction->reference }}</small></div><b class="admin-amount">+{{ number_format($transaction->amount, 0) }}</b></div>@empty<p class="empty-copy">No transactions recorded yet.</p>@endforelse</section>
+        </div>
+        <section class="surface-card admin-actions"><div><span class="eyebrow">Operating controls</span><h3>Partner review queues</h3><p>Approve or suspend fund providers and hospital partners from the same protected admin workspace.</p></div><div class="admin-counts"><span><b>{{ $pendingProviders }}</b> provider reviews</span><span><b>{{ $pendingHospitals }}</b> hospital reviews</span></div></section>
+    </div>
+</x-app-layout>
