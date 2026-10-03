@@ -26,7 +26,7 @@ Route::get('/language/{locale}', function (string $locale) {
 })->name('language.switch');
 
 Route::get('/brand/logo', function () {
-    $logo = public_path('images/credai-logo.svg');
+    $logo = storage_path('logs/logo.jpg');
 
     abort_unless(is_file($logo), 404);
 
