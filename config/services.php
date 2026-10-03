@@ -41,5 +41,16 @@ return [
         'token' => env('TRANSACTION_API_TOKEN'),
         'timeout' => env('TRANSACTION_API_TIMEOUT', 15),
     ],
+    'openai' => [
+        'api_key' => env('OPENAI_API_KEY'),
+    ],
+
+    'ai' => [
+        'provider' => env('AI_PROVIDER') ?: 'openai',
+        'api_url' => env('AI_API_URL'),
+        'api_key' => env('AI_API_KEY') ?: env('OPENAI_API_KEY'),
+        'model' => env('AI_MODEL') ?: 'gpt-5-mini',
+        'timeout' => (int) env('AI_TIMEOUT_SECONDS', 20),
+    ],
 
 ];

@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="auth-title"><h2>Welcome back</h2><p>Sign in to continue managing your funding journey.</p></div>
+    <div class="auth-title"><h2>{{ __('Welcome back') }}</h2><p>{{ __('Sign in to continue protecting your family and finances.') }}</p></div>
     <!-- Session Status -->
     <x-auth-session-status class="mb-4" :status="session('status')" />
 

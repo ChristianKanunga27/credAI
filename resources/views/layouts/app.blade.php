@@ -32,5 +32,8 @@
                 {{ $slot }}
             </main>
         </div>
+        @unless(request()->routeIs('ai.index'))
+            @include('shared.ai-assistant')
+        @endunless
     </body>
 </html>

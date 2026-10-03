@@ -1,42 +1,43 @@
 <nav x-data="{ open: false }" class="app-navigation">
-    <!-- Primary Navigation Menu -->
+    @php $userRole = auth()->user()?->role; @endphp
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
-                <!-- Logo -->
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="app-brand">
                         <img class="app-brand-logo" src="{{ route('brand.logo') }}" alt="CredHealth - A CredAI Technologies Company">
                     </a>
                 </div>
 
-                <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex app-nav-links">
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    @if (auth()->user()->role === 'admin')
-                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">Admin control</x-nav-link>
+                    <x-nav-link :href="route('ai.index')" :active="request()->routeIs('ai.*')">{{ __('AI guide') }}</x-nav-link>
+                    @if (in_array($userRole, ['admin'], true))
+                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">{{ __('Admin control') }}</x-nav-link>
                     @endif
-                    @if (auth()->user()->role === 'business')
-                        <x-nav-link :href="route('business.create')" :active="request()->routeIs('business.*')">Business profile</x-nav-link>
-                        <x-nav-link :href="route('funding.create')" :active="request()->routeIs('funding.*')">Apply for funding</x-nav-link>
-                        <x-nav-link :href="route('transactions.create')" :active="request()->routeIs('transactions.*')">Add evidence</x-nav-link>
+                    @if (in_array($userRole, ['individual', 'business'], true))
+                        <x-nav-link :href="route('insurance.quote')" :active="request()->routeIs('insurance.*')">Smart quote</x-nav-link>
+                    @endif
+                    @if (in_array($userRole, ['insurer', 'provider', 'hospital'], true))
+                        <x-nav-link :href="route('provider.dashboard')" :active="request()->routeIs('provider.*')">{{ __('Provider workspace') }}</x-nav-link>
                     @endif
                 </div>
             </div>
 
-            <!-- Account Controls -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <button type="button" class="theme-toggle" aria-label="Toggle color theme" @click="dark = ! dark; localStorage.setItem('credai-theme', dark ? 'dark' : 'light')">
                     <span x-text="dark ? 'Light' : 'Dark'"></span>
                 </button>
                 <select class="app-language-select" aria-label="Language" onchange="window.location.href = this.value"><option value="{{ route('language.switch', 'en') }}" @selected(app()->getLocale() === 'en')>EN</option><option value="{{ route('language.switch', 'sw') }}" @selected(app()->getLocale() === 'sw')>SW</option></select>
-                <a class="app-account-link" href="{{ route('profile.edit') }}">{{ __('Settings') }}</a>
-                <form method="POST" action="{{ route('logout') }}" class="app-logout-form">
-                    @csrf
-                    <button type="submit" class="app-logout-button">{{ __('Log Out') }}</button>
-                </form>
+                @auth
+                    <a class="app-account-link" href="{{ route('profile.edit') }}">{{ __('Settings') }}</a>
+                    <form method="POST" action="{{ route('logout') }}" class="app-logout-form">
+                        @csrf
+                        <button type="submit" class="app-logout-button">{{ __('Log Out') }}</button>
+                    </form>
+                @endauth
                 {{--
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
@@ -88,31 +89,38 @@
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            @if (auth()->user()->role === 'business')
-                <x-responsive-nav-link :href="route('funding.create')">Apply for funding</x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('transactions.create')">Add evidence</x-responsive-nav-link>
+            <x-responsive-nav-link :href="route('ai.index')" :active="request()->routeIs('ai.*')">{{ __('AI guide') }}</x-responsive-nav-link>
+            @if (in_array($userRole, ['individual', 'business'], true))
+                <x-responsive-nav-link :href="route('insurance.quote')">Smart quote</x-responsive-nav-link>
+            @endif
+            @if (in_array($userRole, ['insurer', 'provider', 'hospital'], true))
+                <x-responsive-nav-link :href="route('provider.dashboard')">{{ __('Provider workspace') }}</x-responsive-nav-link>
+            @endif
+            @if ($userRole === 'admin')
+                <x-responsive-nav-link :href="route('admin.dashboard')">{{ __('Admin control') }}</x-responsive-nav-link>
             @endif
         </div>
 
         <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
-                <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+        @auth
+            <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
+                <div class="px-4">
+                    <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
+                    <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
+                </div>
+
+                <div class="mt-3 space-y-1">
+                    <x-responsive-nav-link :href="route('profile.edit')">
+                        {{ __('Settings & password') }}
+                    </x-responsive-nav-link>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+
+                        <button type="submit" class="app-mobile-logout">{{ __('Log Out') }}</button>
+                    </form>
+                </div>
             </div>
-
-            <div class="mt-3 space-y-1">
-                <x-responsive-nav-link :href="route('profile.edit')">
-                    {{ __('Settings & password') }}
-                </x-responsive-nav-link>
-
-                <!-- Authentication -->
-                <form method="POST" action="{{ route('logout') }}">
-                    @csrf
-
-                    <button type="submit" class="app-mobile-logout">{{ __('Log Out') }}</button>
-                </form>
-            </div>
-        </div>
+        @endauth
     </div>
 </nav>

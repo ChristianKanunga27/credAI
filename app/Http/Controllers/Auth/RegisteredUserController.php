@@ -33,7 +33,7 @@ class RegisteredUserController extends Controller
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
-            'role' => ['required', 'in:business,provider,hospital'],
+            'role' => ['required', 'in:individual,insurer'],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
         ]);
 
@@ -48,6 +48,6 @@ class RegisteredUserController extends Controller
 
         Auth::login($user);
 
-        return redirect(route($user->role === 'admin' ? 'admin.dashboard' : 'dashboard', absolute: false));
+        return redirect(route('dashboard', absolute: false));
     }
 }

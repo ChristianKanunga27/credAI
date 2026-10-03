@@ -2,45 +2,55 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Support\Facades\DB;
+use App\Models\InsuranceLoanApplication;
+use App\Models\InsurancePayment;
+use App\Models\InsuranceProfile;
+use App\Services\InsuranceQuoteService;
+use App\Services\OpenAIService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 
 class DashboardController extends Controller
 {
-    public function __invoke(): View|RedirectResponse
+    public function __invoke(InsuranceQuoteService $insuranceQuoteService, OpenAIService $openAIService): View|RedirectResponse
     {
         $user = auth()->user();
-        $role = $user->role ?? 'business';
+        $role = match ($user->role ?? 'individual') {
+            'business', 'individual' => 'individual',
+            'provider', 'insurer', 'hospital' => 'insurer',
+            default => $user->role,
+        };
 
         if ($role === 'admin') {
             return redirect()->route('admin.dashboard');
         }
-        $business = DB::table('businesses')->where('owner_id', $user->id)->latest()->first();
-        $transactions = $business
-            ? DB::table('business_transactions')->where('business_id', $business->id)->latest('occurred_at')->limit(5)->get()
-            : collect();
-        $transactionTotal = $business
-            ? (float) DB::table('business_transactions')->where('business_id', $business->id)->where('transaction_type', 'credit')->where('verification_status', 'verified')->sum('amount')
-            : 0;
-        $capital = (float) ($business->capital ?? 0);
-        $eligibilityRatio = $capital > 0 ? round(($transactionTotal / $capital) * 100, 1) : 0;
-        $application = $business
-            ? DB::table('funding_applications')->where('business_id', $business->id)->latest()->first()
-            : null;
+
+        if ($role === 'insurer') {
+            return redirect()->route('provider.dashboard');
+        }
+
+        $profile = $user ? InsuranceProfile::where('user_id', $user->id)->latest()->first() : null;
+        $simBalance = $profile ? (float) $profile->sim_balance : ($user?->phone ? $insuranceQuoteService->checkSimBalance((string) $user->phone) : 250000);
+        $coverageGoal = $profile ? $profile->coverage_goal : 'family_protection';
+        $quote = $insuranceQuoteService->buildQuote($simBalance, $coverageGoal, $user->name ?? 'Customer');
+
+        if ($profile) {
+            $quote['monthly_premium'] = (int) $profile->monthly_premium ?: $quote['monthly_premium'];
+            $quote['coverage_amount'] = (float) $profile->coverage_amount ?: $quote['coverage_amount'];
+            $quote['risk_level'] = $profile->risk_level ?: $quote['risk_level'];
+            $quote['recommended_plan'] = $profile->recommended_plan ?: $quote['recommended_plan'];
+            $quote['goal_label'] = $profile->coverage_goal ? ucfirst(str_replace('_', ' ', $profile->coverage_goal)) : $quote['goal_label'];
+            $quote['ai_summary'] = $profile->ai_summary ?: $quote['ai_summary'];
+        }
 
         return view('dashboard', [
-            'business' => $business,
-            'transactions' => $transactions,
-            'application' => $application,
-            'transactionTotal' => $transactionTotal,
-            'eligibilityRatio' => $eligibilityRatio,
-            'eligible' => $eligibilityRatio > 30,
-            'activeApplications' => DB::table('funding_applications')->whereIn('status', ['submitted', 'under_review', 'approved'])->count(),
-            'approvedApplications' => DB::table('funding_applications')->where('status', 'approved')->count(),
-            'providerCount' => DB::table('fund_providers')->where('status', 'approved')->count(),
-            'hospitalCount' => DB::table('hospitals')->where('status', 'approved')->count(),
             'role' => $role,
+            'roleLabel' => $role === 'individual' ? 'Normal user' : 'Insurance provider',
+            'simBalance' => $simBalance,
+            'quote' => $quote,
+            'payments' => InsurancePayment::whereBelongsTo($user)->latest()->limit(5)->get(),
+            'loanApplications' => InsuranceLoanApplication::whereBelongsTo($user)->latest()->limit(5)->get(),
+            'aiEnabled' => $openAIService->isConfigured(),
         ]);
     }
 }

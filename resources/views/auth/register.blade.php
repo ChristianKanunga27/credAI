@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="auth-title"><h2>Create your CredAI account</h2><p>Start with your details. You can choose your role and complete your profile next.</p></div>
+    <div class="auth-title"><h2>{{ __('Create your CredAI account') }}</h2><p>{{ __('Start with your details. You can choose your role and complete your profile next.') }}</p></div>
     <form method="POST" action="{{ route('register') }}">
         @csrf
 
@@ -21,9 +21,8 @@
             <x-input-label for="role" :value="__('I am joining as')" />
             <select id="role" name="role" class="auth-role-select" required>
                 <option value="">{{ __('Choose your role') }}</option>
-                <option value="business" @selected(old('role') === 'business')>{{ __('Business owner') }}</option>
-                <option value="provider" @selected(old('role') === 'provider')>{{ __('Fund provider') }}</option>
-                <option value="hospital" @selected(old('role') === 'hospital')>{{ __('Hospital partner') }}</option>
+                <option value="individual" @selected(old('role') === 'individual')>{{ __('Normal user') }}</option>
+                <option value="insurer" @selected(old('role') === 'insurer')>{{ __('Insurance provider') }}</option>
             </select>
             <x-input-error :messages="$errors->get('role')" class="mt-2" />
         </div>
