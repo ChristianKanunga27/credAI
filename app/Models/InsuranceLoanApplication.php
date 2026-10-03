@@ -23,6 +23,7 @@ class InsuranceLoanApplication extends Model
         'sim_balance_at_application',
         'balance_verified_at_application',
         'disbursement_destination',
+        'disbursement_phone',
         'status',
         'repayment_months',
         'monthly_repayment',

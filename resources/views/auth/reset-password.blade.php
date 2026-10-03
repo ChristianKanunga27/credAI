@@ -1,4 +1,5 @@
 <x-guest-layout>
+    <div class="auth-title"><h2>{{ __('Choose a new password') }}</h2><p>{{ __('Use a strong password to keep your CredAI account secure.') }}</p></div>
     <form method="POST" action="{{ route('password.store') }}">
         @csrf
 

@@ -1,126 +1,66 @@
-<nav x-data="{ open: false }" class="app-navigation">
-    @php $userRole = auth()->user()?->role; @endphp
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" class="app-brand">
-                        <img class="app-brand-logo" src="{{ route('brand.logo') }}" alt="CredHealth - A CredAI Technologies Company">
-                    </a>
-                </div>
+@php
+    $user = auth()->user();
+    $userRole = $user?->role;
+@endphp
 
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex app-nav-links">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('ai.index')" :active="request()->routeIs('ai.*')">{{ __('AI guide') }}</x-nav-link>
-                    @if (in_array($userRole, ['admin'], true))
-                        <x-nav-link :href="route('admin.dashboard')" :active="request()->routeIs('admin.*')">{{ __('Admin control') }}</x-nav-link>
-                    @endif
-                    @if (in_array($userRole, ['individual', 'business'], true))
-                        <x-nav-link :href="route('insurance.quote')" :active="request()->routeIs('insurance.*')">Smart quote</x-nav-link>
-                    @endif
-                    @if (in_array($userRole, ['insurer', 'provider', 'hospital'], true))
-                        <x-nav-link :href="route('provider.dashboard')" :active="request()->routeIs('provider.*')">{{ __('Provider workspace') }}</x-nav-link>
-                    @endif
-                </div>
-            </div>
+<div class="workspace-sidebar-wrap">
+    <button type="button" class="sidebar-backdrop" x-show="sidebarOpen" x-transition.opacity @click="sidebarOpen = false" aria-label="{{ __('Close navigation') }}"></button>
 
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <button type="button" class="theme-toggle" aria-label="Toggle color theme" @click="dark = ! dark; localStorage.setItem('credai-theme', dark ? 'dark' : 'light')">
-                    <span x-text="dark ? 'Light' : 'Dark'"></span>
+    <aside id="workspace-sidebar" class="workspace-sidebar" :class="{ 'workspace-sidebar--open': sidebarOpen }" aria-label="{{ __('Main navigation') }}">
+        <a href="{{ route('dashboard') }}" class="sidebar-brand">
+            <img src="{{ route('brand.logo') }}" alt="CredAI" onerror="this.hidden=true; this.nextElementSibling.hidden=false">
+            <span class="sidebar-brand-fallback" hidden><span class="sidebar-brand-mark">C</span><span>CredAI<small>INTELLIGENT PROTECTION</small></span></span>
+        </a>
+
+        <div class="sidebar-section-label">{{ __('Workspace') }}</div>
+        <nav class="sidebar-links">
+            <a href="{{ route('dashboard') }}" @class(['sidebar-link', 'is-active' => request()->routeIs('dashboard')]) @if(request()->routeIs('dashboard')) aria-current="page" @endif>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="3" width="7" height="8" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="15" width="7" height="6" rx="1.5"/></svg>
+                <span>{{ __('Dashboard') }}</span>
+            </a>
+
+            @if(in_array($userRole, ['individual', 'business'], true))
+                <a href="{{ route('insurance.quote') }}" @class(['sidebar-link', 'is-active' => request()->routeIs('insurance.*')])>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 20 6v5c0 5.2-3.4 8.4-8 10-4.6-1.6-8-4.8-8-10V6l8-3Z"/><path d="m8.5 12 2.2 2.2 4.8-5"/></svg>
+                    <span>{{ __('Smart quote') }}</span>
+                </a>
+            @endif
+
+            @if(in_array($userRole, ['insurer', 'provider', 'hospital'], true))
+                <a href="{{ route('provider.dashboard') }}" @class(['sidebar-link', 'is-active' => request()->routeIs('provider.*')])>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h.01M15 10h.01M9 14h.01M15 14h.01M10 21v-4h4v4"/></svg>
+                    <span>{{ __('Provider workspace') }}</span>
+                </a>
+            @endif
+
+            @if($userRole === 'admin')
+                <a href="{{ route('admin.dashboard') }}" @class(['sidebar-link', 'is-active' => request()->routeIs('admin.*')])>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/><path d="M17 6h3v3"/></svg>
+                    <span>{{ __('Admin control') }}</span>
+                </a>
+            @endif
+
+            <a href="{{ route('ai.index') }}" @class(['sidebar-link', 'is-active' => request()->routeIs('ai.*')])>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6 2.1 2.1m0-12.8-2.1 2.1m-8.6 8.6-2.1 2.1"/><circle cx="12" cy="12" r="5"/></svg>
+                <span>{{ __('AI guide') }}</span><span class="sidebar-ai-tag">AI</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-spacer"></div>
+        <div class="sidebar-section-label">{{ __('Account') }}</div>
+        <a href="{{ route('profile.edit') }}" @class(['sidebar-link', 'is-active' => request()->routeIs('profile.*')])>
+            <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+            <span>{{ __('Profile and settings') }}</span>
+        </a>
+        <div class="sidebar-account">
+            <span class="sidebar-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($user?->name ?? 'C', 0, 1)) }}</span>
+            <span class="sidebar-account-copy"><strong>{{ $user?->name }}</strong><small>{{ ucfirst($userRole ?? '') }}</small></span>
+            <form method="POST" action="{{ route('logout') }}">
+                @csrf
+                <button type="submit" class="sidebar-logout" aria-label="{{ __('Log out') }}" title="{{ __('Log out') }}">
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg>
                 </button>
-                <select class="app-language-select" aria-label="Language" onchange="window.location.href = this.value"><option value="{{ route('language.switch', 'en') }}" @selected(app()->getLocale() === 'en')>EN</option><option value="{{ route('language.switch', 'sw') }}" @selected(app()->getLocale() === 'sw')>SW</option></select>
-                @auth
-                    <a class="app-account-link" href="{{ route('profile.edit') }}">{{ __('Settings') }}</a>
-                    <form method="POST" action="{{ route('logout') }}" class="app-logout-form">
-                        @csrf
-                        <button type="submit" class="app-logout-button">{{ __('Log Out') }}</button>
-                    </form>
-                @endauth
-                {{--
-                <x-dropdown align="right" width="48">
-                    <x-slot name="trigger">
-                        <button class="app-user-trigger">
-                            <div>{{ Auth::user()->name }}</div>
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                                </svg>
-                            </div>
-                        </button>
-                    </x-slot>
-
-                    <x-slot name="content">
-                        <x-dropdown-link :href="route('profile.edit')">
-                            {{ __('Profile') }}
-                        </x-dropdown-link>
-
-                        <!-- Authentication -->
-                        <form method="POST" action="{{ route('logout') }}">
-                            @csrf
-
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
-                        </form>
-                    </x-slot>
-                </x-dropdown> --}}
-            </div>
-
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 dark:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-900 focus:outline-none focus:bg-gray-100 dark:focus:bg-gray-900 focus:text-gray-500 dark:focus:text-gray-400 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                </button>
-            </div>
+            </form>
         </div>
-    </div>
-
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1 app-mobile-links">
-            <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                {{ __('Dashboard') }}
-            </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('ai.index')" :active="request()->routeIs('ai.*')">{{ __('AI guide') }}</x-responsive-nav-link>
-            @if (in_array($userRole, ['individual', 'business'], true))
-                <x-responsive-nav-link :href="route('insurance.quote')">Smart quote</x-responsive-nav-link>
-            @endif
-            @if (in_array($userRole, ['insurer', 'provider', 'hospital'], true))
-                <x-responsive-nav-link :href="route('provider.dashboard')">{{ __('Provider workspace') }}</x-responsive-nav-link>
-            @endif
-            @if ($userRole === 'admin')
-                <x-responsive-nav-link :href="route('admin.dashboard')">{{ __('Admin control') }}</x-responsive-nav-link>
-            @endif
-        </div>
-
-        <!-- Responsive Settings Options -->
-        @auth
-            <div class="pt-4 pb-1 border-t border-gray-200 dark:border-gray-600">
-                <div class="px-4">
-                    <div class="font-medium text-base text-gray-800 dark:text-gray-200">{{ Auth::user()->name }}</div>
-                    <div class="font-medium text-sm text-gray-500">{{ Auth::user()->email }}</div>
-                </div>
-
-                <div class="mt-3 space-y-1">
-                    <x-responsive-nav-link :href="route('profile.edit')">
-                        {{ __('Settings & password') }}
-                    </x-responsive-nav-link>
-
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-
-                        <button type="submit" class="app-mobile-logout">{{ __('Log Out') }}</button>
-                    </form>
-                </div>
-            </div>
-        @endauth
-    </div>
-</nav>
+    </aside>
+</div>

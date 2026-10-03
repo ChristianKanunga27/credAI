@@ -6,6 +6,16 @@ use App\Models\InsuranceProfile;
 use App\Models\InsuranceProvider;
 use App\Models\User;
 
+test('insurer sees the provider dashboard', function () {
+    $providerUser = User::factory()->create(['role' => 'insurer']);
+
+    $response = $this->actingAs($providerUser)->get(route('provider.dashboard'));
+
+    $response->assertOk();
+    $response->assertSee(__('Provider workspace'));
+    $response->assertSee(__('No assigned policies yet.'));
+});
+
 test('administrator sees the insurance management dashboard', function () {
     $administrator = User::factory()->create(['role' => 'admin']);
 

@@ -41,15 +41,16 @@ return [
         'token' => env('TRANSACTION_API_TOKEN'),
         'timeout' => env('TRANSACTION_API_TIMEOUT', 15),
     ],
-    'openai' => [
-        'api_key' => env('OPENAI_API_KEY'),
+    'gemini' => [
+        'api_key' => env('GEMINI_API_KEY'),
     ],
 
     'ai' => [
-        'provider' => env('AI_PROVIDER') ?: 'openai',
+        'provider' => env('AI_PROVIDER') ?: 'gemini',
         'api_url' => env('AI_API_URL'),
-        'api_key' => env('AI_API_KEY') ?: env('OPENAI_API_KEY'),
-        'model' => env('AI_MODEL') ?: 'gpt-5-mini',
+        'api_key' => env('AI_API_KEY') ?: env('GEMIN_API_KEY'),
+        'model' => env('AI_MODEL') ?: 'gemini-3.8-flash',
+        'fallback_model' => env('AI_FALLBACK_MODEL', 'gemini-flash-lite-latest'),
         'timeout' => (int) env('AI_TIMEOUT_SECONDS', 20),
     ],
 

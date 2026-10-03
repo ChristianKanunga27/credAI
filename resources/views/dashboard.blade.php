@@ -70,16 +70,6 @@
                 <article class="metric-card metric-card--accent"><span class="metric-label">Monthly premium</span><strong>{{ number_format($quote['monthly_premium'], 0) }}<small>TZS</small></strong><span class="metric-note">{{ $quote['recommended_plan'] }}</span></article>
                 <article class="metric-card"><span class="metric-label">Coverage value</span><strong>{{ number_format($quote['coverage_amount'], 0) }} <small>TZS</small></strong><span class="metric-note">Recommended cover amount</span></article>
                 <article class="metric-card"><span class="metric-label">Risk level</span><strong>{{ ucfirst($quote['risk_level']) }}</strong><span class="metric-note">AI-adjusted protection fit</span></article>
-            @elseif($role === 'insurer')
-                <article class="metric-card"><span class="metric-label">Policies live</span><strong>1,284</strong><span class="metric-note">Active insured customers</span></article>
-                <article class="metric-card metric-card--accent"><span class="metric-label">Claim ratio</span><strong>7.6<small>%</small></strong><span class="metric-note">Healthy loss performance</span></article>
-                <article class="metric-card"><span class="metric-label">Fresh requests</span><strong>91</strong><span class="metric-note">New quotes awaiting review</span></article>
-                <article class="metric-card"><span class="metric-label">AI picks</span><strong>15</strong><span class="metric-note">High-confidence recommendations</span></article>
-            @else
-                <article class="metric-card"><span class="metric-label">Users</span><strong>2,480</strong><span class="metric-note">Registered customers</span></article>
-                <article class="metric-card metric-card--accent"><span class="metric-label">Policies</span><strong>1,860</strong><span class="metric-note">Active protection plans</span></article>
-                <article class="metric-card"><span class="metric-label">Providers</span><strong>18</strong><span class="metric-note">Licensed insurers</span></article>
-                <article class="metric-card"><span class="metric-label">AI alerts</span><strong>8</strong><span class="metric-note">System and risk warnings</span></article>
             @endif
         </section>
 

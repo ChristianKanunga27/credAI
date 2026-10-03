@@ -2,14 +2,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Services\OpenAIService;
+use App\Services\GeminiService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
 
-class AIController extends Controller
+class GeminiChatController extends Controller
 {
-    public function __construct(private readonly OpenAIService $openAI) {}
+    public function __construct(private readonly GeminiService $gemini) {}
 
     public function index(): View
     {
@@ -38,7 +38,7 @@ class AIController extends Controller
             default => 'general CredAI page',
         };
 
-        return response()->json($this->openAI->chat(
+        return response()->json($this->gemini->chat(
             $validated['message'],
             $validated['history'] ?? [],
             $page,

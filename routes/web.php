@@ -1,11 +1,11 @@
 <?php
 
 use App\Http\Controllers\AdminDashboardController;
-use App\Http\Controllers\AIController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessTransactionController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FundingApplicationController;
+use App\Http\Controllers\GeminiChatController;
 use App\Http\Controllers\InsuranceCheckoutController;
 use App\Http\Controllers\InsuranceQuoteController;
 use App\Http\Controllers\ProfileController;
@@ -72,7 +72,7 @@ Route::middleware(['auth', 'role:insurer,provider,hospital'])->prefix('provider'
     Route::put('/profile', [ProviderDashboardController::class, 'store'])->name('profile.store');
 });
 
-Route::get('/ai', [AIController::class, 'index'])->name('ai.index');
-Route::post('/ai/chat', [AIController::class, 'chat'])->middleware('throttle:ai-chat')->name('ai.chat');
+Route::get('/ai', [GeminiChatController::class, 'index'])->name('ai.index');
+Route::post('/ai/chat', [GeminiChatController::class, 'chat'])->middleware('throttle:ai-chat')->name('ai.chat');
 
 require __DIR__.'/auth.php';

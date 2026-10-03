@@ -114,13 +114,19 @@
                         }),
                     });
                     const data = await response.json();
+                    const assistantResponse = typeof data.response === 'string'
+                        ? data.response
+                        : data.message;
 
-                    if (!response.ok || typeof data.response !== 'string') {
+                    if (!response.ok || typeof assistantResponse !== 'string') {
                         throw new Error('The assistant request failed.');
                     }
 
-                    addMessage('assistant', data.response);
-                    history.push({ role: 'user', content: message }, { role: 'assistant', content: data.response });
+                    addMessage('assistant', assistantResponse);
+
+                    if (data.success !== false) {
+                        history.push({ role: 'user', content: message }, { role: 'assistant', content: assistantResponse });
+                    }
                 } catch {
                     addMessage('assistant', labels.failed);
                 } finally {
