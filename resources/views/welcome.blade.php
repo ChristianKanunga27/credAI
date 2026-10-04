@@ -3,8 +3,12 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="CredAI connects people, insurers, and admins with smarter protection, mobile-money balance checks, and AI-assisted insurance decisions.">
-    <title>CredAI | Smarter insurance decisions</title>
+    <meta name="description" content="CredHealth connects people, insurers, and admins with smarter protection, mobile-money balance checks, and AI-assisted insurance decisions.">
+    <title>CredHealth | Smarter insurance decisions</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <style>
         :root {
@@ -23,11 +27,20 @@
         * { box-sizing: border-box; }
         html { scroll-behavior: smooth; }
         body { margin: 0; }
+        body.credai-home, body.credai-home *:not([class*="fa-"]):not(.fa):not(.fas):not(.far):not(.fab):not(.fal) {
+            font-family: 'Poppins', sans-serif !important;
+        }
 
         .credai-home {
-            background: var(--c-paper);
+            background-color: var(--c-paper);
+            background-image:
+                linear-gradient(rgba(0, 0, 0, 0.52), rgba(0, 0, 0, 0.52)),
+                url("{{ asset('images/background.jpg') }}");
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
             color: var(--c-ink);
-            font-family: 'DM Sans', sans-serif;
+            font-family: 'Poppins', sans-serif;
             min-height: 100vh;
             overflow-x: clip;
         }
@@ -161,8 +174,25 @@
 
         .hero-copy { max-width: 680px; }
 
+        .hero-copy,
+        .trust-bar,
+        .section-top,
+        .process-grid {
+            text-shadow: 0 2px 5px rgba(0, 0, 0, 0.9);
+        }
+
+        .hero h1,
+        .trust-bar p,
+        .trust-points,
+        .section-title,
+        .section-intro,
+        .process-step h3,
+        .process-step p {
+            color: #fff;
+        }
+
         .kicker {
-            color: var(--c-green);
+            color: var(--c-lime);
             font-size: 0.67rem;
             font-weight: 700;
             letter-spacing: 0.16em;
@@ -176,19 +206,24 @@
         }
 
         .hero h1 em {
-            color: var(--c-green);
+            color: var(--c-lime);
             font-style: normal;
         }
 
         .hero-description {
-            color: var(--c-muted);
+            color: #fff;
             font-size: 1.05rem;
             line-height: 1.75;
             max-width: 560px;
             margin: 0;
         }
 
-        .credai-home .hero-copy .hero-description { color: var(--c-muted); }
+        .credai-home .hero-copy .hero-description { color: #fff; }
+
+        .hero-description strong {
+            color: var(--c-lime);
+            font-weight: 700;
+        }
 
         .hero-actions {
             display: flex;
@@ -216,11 +251,11 @@
 
         .hero-footnote {
             margin-top: 14px;
-            color: #7a8b84;
+            color: #f1f5ed;
             font-size: 0.71rem;
         }
 
-        .credai-home .hero-copy .hero-footnote { color: #61766d; }
+        .credai-home .hero-copy .hero-footnote { color: #f1f5ed; }
 
         .hero-art {
             position: relative;
@@ -340,7 +375,7 @@
 
         .trust-bar p {
             margin: 0;
-            color: #7b8d86;
+            color: #fff;
             font-size: 0.7rem;
         }
 
@@ -348,12 +383,12 @@
             display: flex;
             flex-wrap: wrap;
             gap: 24px;
-            color: var(--c-ink);
+            color: #fff;
             font: 600 0.75rem 'Space Grotesk', sans-serif;
         }
 
         .trust-points b {
-            color: var(--c-green);
+            color: var(--c-lime);
             margin-right: 6px;
         }
 
@@ -377,7 +412,7 @@
 
         .section-intro {
             max-width: 330px;
-            color: var(--c-muted);
+            color: #fff;
             line-height: 1.7;
         }
 
@@ -531,7 +566,7 @@
         .process-step:nth-child(4) { border-color: var(--c-ink); }
 
         .process-step b {
-            color: var(--c-green);
+            color: var(--c-lime);
             font: 700 0.67rem 'Space Grotesk', sans-serif;
         }
 
@@ -543,7 +578,7 @@
         .process-step p {
             margin: 0;
             max-width: 210px;
-            color: var(--c-muted);
+            color: #fff;
             font-size: 0.72rem;
             line-height: 1.65;
         }
@@ -671,10 +706,10 @@
     </style>
 </head>
 <body class="credai-home">
-    <header class="home-wrap">
-        <nav class="home-nav" aria-label="Main navigation">
+    <header>
+        <nav class="home-nav home-wrap" aria-label="Main navigation">
             <a href="{{ url('/') }}" class="logo">
-                <img src="{{ route('brand.logo') }}" alt="CredAI logo">
+                <img src="{{ route('brand.logo') }}" alt="CredHealth logo">
             </a>
 
             <div class="home-nav-links">
@@ -708,8 +743,8 @@
         <section class="hero">
             <div class="hero-copy">
                 <span class="kicker">Protection built on real mobile value</span>
-                <h1>CredAI</h1>
-                <p class="hero-description">CredAI helps people, families, and insurers use mobile-money balance intelligence and AI guidance to make insurance decisions that are fairer, clearer, and easier to trust.</p>
+                <h1>CredHealth</h1>
+                <p class="hero-description">CredHealth helps people, families, and insurers use <strong>mobile-money balance intelligence</strong> and <strong>AI guidance</strong> to make insurance decisions that are fairer, clearer, and easier to trust.</p>
 
                 <div class="hero-actions">
                     <a class="action-main" href="{{ route('register') }}">Get my smart quote <span aria-hidden="true">&rarr;</span></a>
@@ -720,7 +755,7 @@
             </div>
 
             <div class="hero-art">
-                <span class="art-title">CredAI protection index</span>
+                <span class="art-title">CredHealth protection index</span>
                 <div class="readiness-card">
                     <small>Estimated monthly premium</small>
                     <strong>3,500<span>TZS</span></strong>
@@ -750,7 +785,7 @@
                     <span class="kicker">One platform, three roles</span>
                     <h2 class="section-title">Everyone sees the next right step.</h2>
                 </div>
-                <p class="section-intro">CredAI brings customers, providers, and admins into one secure protection flow with clear decision support.</p>
+                <p class="section-intro">CredHealth brings customers, providers, and admins into one secure protection flow with clear decision support.</p>
             </div>
 
             <div class="audience-grid">
@@ -780,9 +815,9 @@
         <section class="feature-band" id="platform">
             <div class="feature-layout">
                 <div>
-                    <span class="kicker">The CredAI platform</span>
+                    <span class="kicker">The CredHealth platform</span>
                     <h2>Smarter insurance decisions start with stronger evidence.</h2>
-                    <p>From the first balance check to final approval, CredAI keeps customer data, policy needs, and recommendations in one secure system. That means better coverage matches for users and stronger oversight for providers and admins.</p>
+                    <p>From the first balance check to final approval, CredHealth keeps customer data, policy needs, and recommendations in one secure system. That means better coverage matches for users and stronger oversight for providers and admins.</p>
                     <a class="action-main" href="{{ route('register') }}">See your protection fit <span aria-hidden="true">&rarr;</span></a>
                 </div>
 
@@ -834,7 +869,7 @@
                 <article class="process-step">
                     <b>03 / AI</b>
                     <h3>Receive a smart recommendation.</h3>
-                    <p>CredAI suggests the right premium, risk level, and coverage value using a transparent model.</p>
+                    <p>CredHealth suggests the right premium, risk level, and coverage value using a transparent model.</p>
                 </article>
                 <article class="process-step">
                     <b>04 / APPROVE</b>
@@ -857,7 +892,7 @@
         <div class="home-wrap footer-grid">
             <div class="footer-brand">
                 <a href="{{ url('/') }}" class="logo">
-                    <img src="{{ route('brand.logo') }}" alt="CredAI logo">
+                    <img src="{{ route('brand.logo') }}" alt="CredHealth logo">
                 </a>
                 <p>Verified activity. Responsible capital. Stronger businesses.</p>
                 <a class="footer-phone" href="tel:+255652455040">+255 652 455 040</a>
@@ -882,14 +917,14 @@
 
             <div class="footer-column">
                 <strong>Visit us</strong>
-                <span>CredAI Tanzania</span>
+                <span>CredHealth Tanzania</span>
                 <span>Dar es Salaam, Tanzania</span>
                 <span>Mon - Fri, 08:00 - 17:00 EAT</span>
             </div>
         </div>
 
         <div class="home-wrap footer-bottom">
-            <p>&copy; {{ date('Y') }} credAI. Funding with a clearer conscience.</p>
+            <p>&copy; {{ date('Y') }} CredHealth. Funding with a clearer conscience.</p>
             <span>Built for trust across Tanzania</span>
         </div>
     </footer>

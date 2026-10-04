@@ -15,16 +15,27 @@
 <div class="ai-assistant-widget {{ $assistantExpanded ? 'ai-assistant-widget--expanded' : '' }}" data-ai-assistant data-endpoint="{{ route('ai.chat') }}" data-page="{{ $assistantContext }}">
     @unless($assistantExpanded)
         <button type="button" class="ai-assistant-launch" data-ai-launch aria-expanded="false" aria-controls="credai-assistant-panel" aria-label="{{ __('Open CredAI assistant') }}" title="{{ __('Open CredAI assistant') }}">
-            <span class="ai-assistant-launch-mark" aria-hidden="true">AI</span>
-            <span>{{ __('Ask CredAI') }}</span>
+            <span class="ai-assistant-launch-mark" aria-hidden="true">
+                <img src="{{ route('brand.logo') }}" alt="">
+            </span>
+            <span class="ai-assistant-launch-copy"><strong>{{ __('Ask CredAI') }}</strong><small>{{ __('Protection guide') }}</small></span>
         </button>
     @endunless
 
     <section id="credai-assistant-panel" class="ai-assistant-panel" data-ai-panel @if(!$assistantExpanded) hidden @endif aria-label="{{ __('CredAI assistant') }}">
         <header class="ai-assistant-header">
-            <div><span class="ai-badge">{{ __('AI assistant') }}</span><h2>{{ __('CredAI protection guide') }}</h2></div>
+            <span class="ai-assistant-avatar" aria-hidden="true">
+                <img src="{{ route('brand.logo') }}" alt="">
+            </span>
+            <div class="ai-assistant-heading">
+                <span class="ai-badge">{{ __('CredAI assistant') }}</span>
+                <h2>{{ $assistantExpanded ? __('CredAI protection guide') : __('Protection guide') }}</h2>
+                <span class="ai-assistant-presence"><span aria-hidden="true"></span>{{ __('Ready to help') }}</span>
+            </div>
             @unless($assistantExpanded)
-                <button type="button" class="ai-assistant-close" data-ai-close aria-label="{{ __('Close assistant') }}" title="{{ __('Close assistant') }}">×</button>
+                <button type="button" class="ai-assistant-close" data-ai-close aria-label="{{ __('Close assistant') }}" title="{{ __('Close assistant') }}">
+                    <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false"><path d="m5 5 10 10M15 5 5 15"/></svg>
+                </button>
             @endunless
         </header>
         <p class="ai-assistant-intro">{{ __('Ask about cover, quotes, payments, loans, claims, or using this page.') }}</p>
