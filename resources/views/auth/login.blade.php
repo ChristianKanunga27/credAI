@@ -45,6 +45,6 @@
             </x-primary-button>
         </div>
 
-        <p class="auth-switch">{{ __('New to CredAI?') }} <a href="{{ route('register') }}">{{ __('Create an account') }}</a></p>
+        <p class="auth-switch">{{ __('New to CredHealth?') }} <a href="{{ route('register') }}">{{ __('Create an account') }}</a></p>
     </form>
 </x-guest-layout>

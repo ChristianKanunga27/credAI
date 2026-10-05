@@ -4,8 +4,9 @@
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1">
         <meta name="csrf-token" content="{{ csrf_token() }}">
+        <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
 
-        <title>CredAI | Workspace</title>
+        <title>CredHealth | Workspace</title>
 
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -23,7 +24,7 @@
                     <button type="button" class="sidebar-menu-toggle" @click="sidebarOpen = true" aria-label="{{ __('Open navigation') }}" aria-controls="workspace-sidebar">
                         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
                     </button>
-                    <div class="workspace-topbar-context">{{ __('CredAI workspace') }}</div>
+                    <div class="workspace-topbar-context">{{ __('CredHealth workspace') }}</div>
                     <div class="workspace-topbar-actions">
                         <select class="app-language-select" aria-label="{{ __('Language') }}" onchange="window.location.href = this.value">
                             <option value="{{ route('language.switch', 'en') }}" @selected(app()->getLocale() === 'en')>EN</option>
@@ -36,8 +37,25 @@
                 </header>
 
                 @isset($header)
+                    @php
+                        $workspaceArtwork = match (true) {
+                            request()->routeIs('admin.*') => ['path' => 'images/two.jpg', 'alt' => __('Hospital exterior')],
+                            request()->routeIs('provider.*') => ['path' => 'images/onejpg', 'alt' => __('Doctor discussing care with a patient')],
+                            request()->routeIs('insurance.*') => ['path' => 'images/hospital.jpeg', 'alt' => __('Caregiver supporting an older adult')],
+                            request()->routeIs('ai.*') => ['path' => 'images/onejpg', 'alt' => __('Doctor discussing care with a patient')],
+                            request()->routeIs('business.*', 'funding.*', 'transactions.*') => ['path' => 'images/three.jpg', 'alt' => __('Customer using a mobile phone')],
+                            request()->routeIs('profile.*') => ['path' => 'images/hospital.jpeg', 'alt' => __('Caregiver supporting an older adult')],
+                            request()->routeIs('dashboard') && auth()->user()?->role === 'business' => ['path' => 'images/three.jpg', 'alt' => __('Customer using a mobile phone')],
+                            request()->routeIs('dashboard') && in_array(auth()->user()?->role, ['insurer', 'provider', 'hospital'], true) => ['path' => 'images/onejpg', 'alt' => __('Doctor discussing care with a patient')],
+                            request()->routeIs('dashboard') => ['path' => 'images/hospital.jpeg', 'alt' => __('Caregiver supporting an older adult')],
+                            default => ['path' => 'images/three.jpg', 'alt' => __('Customer using a mobile phone')],
+                        };
+                    @endphp
                     <header class="app-page-header">
-                        <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">{{ $header }}</div>
+                        <div class="app-page-header-inner max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
+                            <div class="app-page-header-copy">{{ $header }}</div>
+                            <img class="app-page-header-image" src="{{ asset($workspaceArtwork['path']) }}" alt="" aria-hidden="true">
+                        </div>
                     </header>
                 @endisset
 

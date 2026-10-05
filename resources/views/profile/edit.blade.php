@@ -6,7 +6,7 @@
     </x-slot>
 
     <div class="profile-shell">
-        <div class="profile-intro"><span class="eyebrow">CredAI account</span><h1>Keep your workspace details current.</h1><p>Update your identity and security settings so every funding conversation starts with trusted information.</p></div>
+        <div class="profile-intro"><span class="eyebrow">CredHealth account</span><h1>Keep your workspace details current.</h1><p>Update your identity and security settings so every funding conversation starts with trusted information.</p></div>
         <div class="profile-sections">
             <div class="profile-card">
                 <div class="max-w-xl">

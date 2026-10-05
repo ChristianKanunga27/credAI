@@ -6,6 +6,7 @@ use Database\Factories\InsuranceLoanApplicationFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class InsuranceLoanApplication extends Model
 {
@@ -66,5 +67,10 @@ class InsuranceLoanApplication extends Model
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public function premiumPayment(): HasOne
+    {
+        return $this->hasOne(InsurancePayment::class);
     }
 }

@@ -10,7 +10,7 @@
                     {{ $role === 'insurer'
                         ? 'Review policy demand, underwriting risk, and AI recommendations in one clear view.'
                         : ($role === 'admin'
-                            ? 'Monitor the entire CredAI protection network and customer health across the platform.'
+                            ? 'Monitor the entire CredHealth protection network and customer health across the platform.'
                             : 'Track your mobile balance, recommended cover, and next-best protection options.') }}
                 </p>
             </div>
@@ -21,11 +21,51 @@
     <div class="dashboard-shell">
         @if(session('status'))<div class="workspace-status">{{ session('status') }}</div>@endif
         @if(session('error'))<div class="workspace-error">{{ session('error') }}</div>@endif
+        @if($errors->any())<div class="workspace-error">{{ $errors->first() }}</div>@endif
+        @if($role === 'individual' && $activePolicy)
+            <section class="surface-card mb-6">
+                <div class="section-heading">
+                    <div><span class="eyebrow">{{ __('Payment confirmed · coverage active') }}</span><h3>{{ __('Your insurance card is ready') }}</h3><p class="empty-copy">{{ __('Policy :number · TZS :amount annual cover', ['number' => $activePolicy->policy_number, 'amount' => number_format((float) $activePolicy->coverage_amount, 0)]) }}</p></div>
+                    <a href="{{ route('insurance.card') }}" class="button button--green">{{ __('View my card') }}</a>
+                </div>
+            </section>
+        @endif
+        @if($role === 'individual')
+            <section class="surface-card mb-6">
+                <div class="section-heading">
+                    <div>
+                        <span class="eyebrow">{{ __('Available mobile-money balance') }}</span>
+                        <h3>{{ number_format($simBalance, 2) }} TZS</h3>
+                        <p class="empty-copy">{{ $mobileMoneyTransactionCount > 0
+                            ? __('Based on :count verified transactions, less pending payment and loan requests.', ['count' => $mobileMoneyTransactionCount])
+                            : __('Generate a direct-payment quote now, or sync your mobile-money transaction history before applying for a loan.') }}</p>
+                    </div>
+                    <form method="POST" action="{{ route('transactions.sync') }}">
+                        @csrf
+                        <button type="submit" class="button button--green">{{ __('Sync mobile-money transactions') }}</button>
+                    </form>
+                </div>
+            </section>
+            <section class="surface-card mb-6">
+                <div class="section-heading">
+                    <div><span class="eyebrow">{{ __('Verified transaction history') }}</span><h3>{{ __('Recent mobile-money activity') }}</h3></div>
+                    <a class="form-cancel" href="{{ route('transactions.mobile-money.index') }}">{{ __('View full history') }}</a>
+                </div>
+                @forelse($mobileMoneyTransactions as $transaction)
+                    <div class="admin-row">
+                        <div><strong>{{ $transaction->provider ?: __('Mobile money') }} · {{ $transaction->reference }}</strong><small>{{ $transaction->occurred_at->format('Y-m-d H:i') }} · {{ __(ucfirst($transaction->transaction_type)) }}</small></div>
+                        <strong class="{{ $transaction->transaction_type === 'credit' ? 'text-emerald-700' : 'text-slate-700' }}">{{ $transaction->transaction_type === 'debit' ? '−' : '+' }} TZS {{ number_format((float) $transaction->amount, 2) }}</strong>
+                    </div>
+                @empty
+                    <p class="empty-copy">{{ __('No verified mobile-money transactions have been synced yet.') }}</p>
+                @endforelse
+            </section>
+        @endif
 
         <section class="hero-panel">
             <div class="hero-copy">
                 <span class="eyebrow eyebrow--light">
-                    {{ $role === 'insurer' ? 'CredAI underwriting desk' : ($role === 'admin' ? 'CredAI command centre' : 'CredAI personal protection desk') }}
+                    {{ $role === 'insurer' ? 'CredHealth underwriting desk' : ($role === 'admin' ? 'CredHealth command centre' : 'CredHealth personal protection desk') }}
                 </span>
                 <h2>
                     {{ $role === 'insurer'
@@ -43,6 +83,8 @@
                 </p>
                 @if($role === 'individual')
                     <a href="{{ route('insurance.quote') }}" class="button button--light">Get my quote <span aria-hidden="true">&rarr;</span></a>
+                    <a href="{{ route('insurance.card') }}" class="button button--light">{{ __('My insurance card') }}</a>
+                    <a href="{{ route('insurance.services.index') }}" class="button button--light">{{ __('Pay a provider service') }}</a>
                 @elseif($role === 'insurer')
                     <a href="#insights" class="button button--light">Review underwriting <span aria-hidden="true">&rarr;</span></a>
                 @else
@@ -57,7 +99,7 @@
                     @else
                         24<small>h</small>
                     @endif
-                    <span>{{ $role === 'individual' ? 'SIM value' : 'smart review' }}</span>
+                    <span>                    {{ $role === 'individual' ? __('Verified balance') : 'smart review' }}</span>
                 </div>
                 <div class="orbit-tag orbit-tag--top">{{ $role === 'individual' ? 'AI recommended' : 'Risk insight' }}</div>
                 <div class="orbit-tag orbit-tag--bottom">{{ $role === 'individual' ? 'Affordable cover' : 'Policy health' }}</div>
@@ -66,9 +108,9 @@
 
         <section class="metric-grid" aria-label="Protection overview">
             @if($role === 'individual')
-                <article class="metric-card"><span class="metric-label">SIM balance</span><strong>{{ number_format($simBalance, 0) }} <small>TZS</small></strong><span class="metric-note">Latest mobile-money balance</span></article>
-                <article class="metric-card metric-card--accent"><span class="metric-label">Monthly premium</span><strong>{{ number_format($quote['monthly_premium'], 0) }}<small>TZS</small></strong><span class="metric-note">{{ $quote['recommended_plan'] }}</span></article>
-                <article class="metric-card"><span class="metric-label">Coverage value</span><strong>{{ number_format($quote['coverage_amount'], 0) }} <small>TZS</small></strong><span class="metric-note">Recommended cover amount</span></article>
+                <article class="metric-card"><span class="metric-label">{{ __('Available transaction balance') }}</span><strong>{{ number_format($simBalance, 0) }} <small>TZS</small></strong><span class="metric-note">{{ __('Verified transactions less pending requests') }}</span></article>
+                <article class="metric-card metric-card--accent"><span class="metric-label">{{ __('Annual premium') }}</span><strong>{{ number_format((float) config('insurance.annual_premium', 50400), 0) }}<small>TZS</small></strong><span class="metric-note">{{ __('CredHealth yearly plan') }}</span></article>
+                <article class="metric-card"><span class="metric-label">{{ __('Annual coverage value') }}</span><strong>{{ number_format((float) config('insurance.annual_coverage', 100000), 0) }} <small>TZS</small></strong><span class="metric-note">{{ $quote['recommended_plan'] }}</span></article>
                 <article class="metric-card"><span class="metric-label">Risk level</span><strong>{{ ucfirst($quote['risk_level']) }}</strong><span class="metric-note">AI-adjusted protection fit</span></article>
             @endif
         </section>
@@ -114,7 +156,7 @@
             <section class="surface-card activity-card">
                 <div class="section-heading">
                     <div>
-                        <span class="eyebrow">AI copilot</span>
+                    <span class="eyebrow">CredAI copilot</span>
                         <h3>{{ $role === 'insurer' ? 'Recommendation engine' : ($role === 'admin' ? 'Operational intelligence' : 'Your insurance coach') }}</h3>
                     </div>
                 </div>
@@ -126,8 +168,8 @@
 
                 <ul class="ai-list">
                     <li><strong>Plan</strong><span>{{ $quote['recommended_plan'] }}</span></li>
-                    <li><strong>Premium</strong><span>{{ number_format($quote['monthly_premium'], 0) }} TZS / month</span></li>
-                    <li><strong>Coverage</strong><span>{{ number_format($quote['coverage_amount'], 0) }} TZS</span></li>
+                    <li><strong>{{ __('Annual premium') }}</strong><span>{{ number_format((float) config('insurance.annual_premium', 50400), 0) }} TZS / year</span></li>
+                    <li><strong>{{ __('Annual coverage') }}</strong><span>{{ number_format((float) config('insurance.annual_coverage', 100000), 0) }} TZS</span></li>
                     <li><strong>Goal</strong><span>{{ $quote['goal_label'] }}</span></li>
                 </ul>
             </section>
@@ -152,7 +194,27 @@
                 <section class="surface-card">
                     <div class="section-heading"><div><span class="eyebrow">{{ __('Mobile money') }}</span><h3>{{ __('Payment requests') }}</h3></div></div>
                     @forelse($payments as $payment)
-                        <div class="admin-row"><div><strong>{{ $payment->reference }}</strong><small>TZS {{ number_format((float) $payment->amount, 0) }} · {{ $payment->mobile_money_provider ? __(ucfirst(str_replace('_', ' ', $payment->mobile_money_provider))) : __('Mobile money') }}</small></div><span class="status-pill status-pill--amber">{{ __(ucfirst($payment->status)) }}</span></div>
+                        <div class="admin-row">
+                            <div>
+                                <strong>{{ $payment->reference }}</strong>
+                                <small>TZS {{ number_format((float) $payment->amount, 0) }} · {{ $payment->providerService
+                                    ? __(':service at :provider', ['service' => $payment->providerService->name, 'provider' => $payment->providerService->provider?->organization_name])
+                                    : ($payment->loanApplication ? __('Premium financing') : __('Insurance premium')) }} · {{ $payment->mobile_money_provider ? __(ucfirst(str_replace('_', ' ', $payment->mobile_money_provider))) : __('ClickPesa') }}</small>
+                                @if($payment->clickpesa_control_number && $payment->status !== 'paid')
+                                    <small><strong>{{ __('Control number') }}: {{ $payment->clickpesa_control_number }}</strong></small>
+                                    <small>{{ __('Use Pay Bill / Lipa kwa Simu in your mobile-money app, enter this number and the exact amount, then return here after payment.') }}</small>
+                                @endif
+                                @if($payment->status === 'paid')
+                                    <small>{{ __('Paid :date · Receipt :reference', [
+                                        'date' => $payment->paid_at?->format('Y-m-d H:i') ?? __('date unavailable'),
+                                        'reference' => $payment->provider_reference,
+                                    ]) }}</small>
+                                @elseif(in_array($payment->status, ['pending', 'processing'], true))
+                                    <small>{{ __('Waiting for payment confirmation. No payment is marked successful until confirmed.') }}</small>
+                                @endif
+                            </div>
+                            <span class="status-pill {{ $payment->status === 'paid' ? 'status-pill--green' : (in_array($payment->status, ['pending', 'processing'], true) ? 'status-pill--amber' : 'status-pill--soft') }}">{{ __(ucfirst($payment->status)) }}</span>
+                        </div>
                     @empty
                         <p class="empty-copy">{{ __('No payment requests yet.') }}</p>
                     @endforelse
@@ -160,7 +222,16 @@
                 <section class="surface-card">
                     <div class="section-heading"><div><span class="eyebrow">{{ __('Credit review') }}</span><h3>{{ __('Loan applications') }}</h3></div></div>
                     @forelse($loanApplications as $application)
-                        <div class="admin-row"><div><strong>{{ $application->reference }}</strong><small>TZS {{ number_format((float) $application->requested_amount, 0) }} · {{ $application->disbursement_destination === 'insurer' ? __('Pay the insurer directly') : __('Disburse to me') }}</small></div><span class="status-pill status-pill--amber">{{ __(ucfirst(str_replace('_', ' ', $application->status))) }}</span></div>
+                        <div class="admin-row">
+                            <div>
+                                <strong>{{ $application->reference }}</strong>
+                                <small>TZS {{ number_format((float) $application->requested_amount, 0) }} · {{ $application->disbursement_destination === 'insurer' ? __('Pay the insurer directly') : __('Disburse to me') }}</small>
+                                @if($application->premiumPayment)
+                                    <small>{{ __('Premium payment') }} · {{ __(ucfirst($application->premiumPayment->status)) }} · {{ $application->premiumPayment->reference }}</small>
+                                @endif
+                            </div>
+                            <span class="status-pill {{ $application->status === 'approved' ? 'status-pill--green' : (in_array($application->status, ['submitted', 'under_review'], true) ? 'status-pill--amber' : 'status-pill--soft') }}">{{ __(ucfirst(str_replace('_', ' ', $application->status))) }}</span>
+                        </div>
                     @empty
                         <p class="empty-copy">{{ __('No loan applications yet.') }}</p>
                     @endforelse

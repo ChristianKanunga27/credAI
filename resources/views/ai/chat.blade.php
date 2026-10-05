@@ -5,7 +5,7 @@
             <div class="ai-chat-intro-copy">
                 <span class="ai-chat-status"><span aria-hidden="true"></span>{{ __('CredAI assistant is ready') }}</span>
                 <h2 id="ai-chat-heading">{{ __('How can we help you today?') }}</h2>
-                <p>{{ __('Ask a question or choose a topic to get started. Your assistant can guide you through CredAI, but cannot approve applications or move money.') }}</p>
+                <p>{{ __('Ask a question or choose a topic to get started. Your CredAI assistant can guide you through CredHealth, but cannot approve applications or move money.') }}</p>
             </div>
             <div class="ai-chat-topics" aria-label="{{ __('Suggested questions') }}">
                 <button type="button" data-ai-prompt="{{ __('How do I get an insurance quote?') }}">{{ __('Getting a quote') }}</button>

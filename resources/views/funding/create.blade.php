@@ -1,5 +1,5 @@
 <x-app-layout>
-    <x-slot name="header"><div><p class="eyebrow">CredAI funding desk</p><h1 class="page-title">Start an application</h1></div></x-slot>
+    <x-slot name="header"><div><p class="eyebrow">CredHealth funding desk</p><h1 class="page-title">Start an application</h1></div></x-slot>
     <div class="form-shell"><div class="form-intro"><span class="eyebrow">Step 1 of 3</span><h2>Tell providers what you want to build.</h2><p>Your verified activity and hospital partner will give this request the context it needs.</p></div><form method="POST" action="{{ route('funding.store') }}" class="workspace-form">@csrf
         <div class="form-field"><label for="requested_amount">Requested amount</label><input id="requested_amount" name="requested_amount" type="number" min="1" step="0.01" value="{{ old('requested_amount') }}" required><x-input-error :messages="$errors->get('requested_amount')" /></div>
         <div class="form-field"><label for="purpose">What will the funding support?</label><textarea id="purpose" name="purpose" rows="4" required>{{ old('purpose') }}</textarea><x-input-error :messages="$errors->get('purpose')" /></div>

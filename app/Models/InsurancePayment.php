@@ -16,6 +16,10 @@ class InsurancePayment extends Model
         'user_id',
         'insurance_profile_id',
         'insurance_policy_id',
+        'payment_type',
+        'collection_method',
+        'clickpesa_control_number',
+        'provider_service_id',
         'reference',
         'mobile_money_provider',
         'phone',
@@ -23,6 +27,9 @@ class InsurancePayment extends Model
         'currency',
         'status',
         'provider_reference',
+        'confirmation_source',
+        'confirmed_by',
+        'insurance_loan_application_id',
         'paid_at',
     ];
 
@@ -47,5 +54,20 @@ class InsurancePayment extends Model
     public function policy(): BelongsTo
     {
         return $this->belongsTo(InsurancePolicy::class, 'insurance_policy_id');
+    }
+
+    public function confirmedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'confirmed_by');
+    }
+
+    public function loanApplication(): BelongsTo
+    {
+        return $this->belongsTo(InsuranceLoanApplication::class);
+    }
+
+    public function providerService(): BelongsTo
+    {
+        return $this->belongsTo(ProviderService::class);
     }
 }

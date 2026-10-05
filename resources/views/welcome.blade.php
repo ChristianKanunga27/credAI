@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="CredHealth connects people, insurers, and admins with smarter protection, mobile-money balance checks, and AI-assisted insurance decisions.">
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <title>CredHealth | Smarter insurance decisions</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -203,6 +204,16 @@
             margin: 18px 0 22px;
             font: 600 clamp(3.3rem, 6vw, 6.4rem)/0.9 'Space Grotesk', sans-serif;
             letter-spacing: -0.07em;
+        }
+
+        .hero-brand {
+            display: inline-block;
+            animation: credhealth-float 3s ease-in-out infinite;
+        }
+
+        @keyframes credhealth-float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-9px); }
         }
 
         .hero h1 em {
@@ -703,6 +714,10 @@
             .footer-grid { grid-template-columns: 1fr; }
             .footer-bottom { flex-direction: column; align-items: flex-start; }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            .hero-brand { animation: none; }
+        }
     </style>
 </head>
 <body class="credai-home">
@@ -743,8 +758,8 @@
         <section class="hero">
             <div class="hero-copy">
                 <span class="kicker">Protection built on real mobile value</span>
-                <h1>CredHealth</h1>
-                <p class="hero-description">CredHealth helps people, families, and insurers use <strong>mobile-money balance intelligence</strong> and <strong>AI guidance</strong> to make insurance decisions that are fairer, clearer, and easier to trust.</p>
+                <h1 class="hero-brand">CredHealth</h1>
+                <p class="hero-description">CredHealth helps people, families, and insurers use <strong>mobile-money balance intelligence</strong> and <strong>CredAI guidance</strong> to make insurance decisions that are fairer, clearer, and easier to trust.</p>
 
                 <div class="hero-actions">
                     <a class="action-main" href="{{ route('register') }}">Get my smart quote <span aria-hidden="true">&rarr;</span></a>
@@ -829,7 +844,7 @@
                     </div>
                     <div class="feature-item">
                         <b>02</b>
-                        <strong>AI underwriting support</strong>
+                        <strong>CredAI underwriting support</strong>
                         <span>Review recommendations that clearly explain the best-fit plan.</span>
                     </div>
                     <div class="feature-item">
@@ -869,7 +884,7 @@
                 <article class="process-step">
                     <b>03 / AI</b>
                     <h3>Receive a smart recommendation.</h3>
-                    <p>CredHealth suggests the right premium, risk level, and coverage value using a transparent model.</p>
+                    <p>CredAI suggests a premium, risk level, and coverage value for CredHealth using a transparent model.</p>
                 </article>
                 <article class="process-step">
                     <b>04 / APPROVE</b>
@@ -925,7 +940,7 @@
 
         <div class="home-wrap footer-bottom">
             <p>&copy; {{ date('Y') }} CredHealth. Funding with a clearer conscience.</p>
-            <span>Built for trust across Tanzania</span>
+            <span>Technology by CredAI Technologies</span>
         </div>
     </footer>
 

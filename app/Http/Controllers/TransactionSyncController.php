@@ -4,17 +4,18 @@ namespace App\Http\Controllers;
 
 use App\Services\TransactionVerificationService;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Http\Request;
 
 class TransactionSyncController extends Controller
 {
-    public function __invoke(TransactionVerificationService $verification): RedirectResponse
+    public function __invoke(Request $request, TransactionVerificationService $verification): RedirectResponse
     {
-        $business = DB::table('businesses')->where('owner_id', auth()->id())->latest()->first();
-        abort_unless($business && auth()->user()->phone, 422, 'Add a phone number and business profile before syncing transactions.');
+        $result = $verification->syncForUser($request->user());
 
-        $result = $verification->syncForBusiness($business->id, auth()->user()->phone);
+        if ($result['status'] !== 'synced') {
+            return back()->with('error', $result['message']);
+        }
 
-        return back()->with($result['status'] === 'synced' ? 'status' : 'error', $result['message']);
+        return back()->with('status', $result['message']);
     }
 }

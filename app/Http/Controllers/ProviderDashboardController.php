@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\InsuranceClaim;
+use App\Models\InsurancePayment;
 use App\Models\InsurancePolicy;
 use App\Models\InsuranceProvider;
 use Illuminate\Http\RedirectResponse;
@@ -26,8 +27,16 @@ class ProviderDashboardController extends Controller
                 ->limit(20)
                 ->get()
             : collect();
+        $servicePayments = $provider
+            ? InsurancePayment::query()
+                ->with(['user:id,name', 'providerService:id,name'])
+                ->whereHas('providerService', fn ($query) => $query->where('insurance_provider_id', $provider->id))
+                ->latest()
+                ->limit(20)
+                ->get()
+            : collect();
 
-        return view('provider.dashboard', compact('provider', 'policies', 'claims'));
+        return view('provider.dashboard', compact('provider', 'policies', 'claims', 'servicePayments'));
     }
 
     public function store(Request $request): RedirectResponse
@@ -43,7 +52,7 @@ class ProviderDashboardController extends Controller
             || $provider->license_number !== $validated['license_number'];
 
         $provider->fill($validated);
-        $provider->provider_type = 'insurer';
+        $provider->provider_type = Auth::user()->role === 'hospital' ? 'hospital' : 'insurer';
 
         if ($requiresApproval) {
             $provider->status = 'pending';

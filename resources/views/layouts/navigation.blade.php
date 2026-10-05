@@ -8,8 +8,8 @@
 
     <aside id="workspace-sidebar" class="workspace-sidebar" :class="{ 'workspace-sidebar--open': sidebarOpen }" aria-label="{{ __('Main navigation') }}">
         <a href="{{ route('dashboard') }}" class="sidebar-brand">
-            <img src="{{ route('brand.logo') }}" alt="CredAI" onerror="this.hidden=true; this.nextElementSibling.hidden=false">
-            <span class="sidebar-brand-fallback" hidden><span class="sidebar-brand-mark">C</span><span>CredAI<small>INTELLIGENT PROTECTION</small></span></span>
+            <img src="{{ route('brand.logo') }}" alt="CredHealth" onerror="this.hidden=true; this.nextElementSibling.hidden=false">
+            <span class="sidebar-brand-fallback" hidden><span class="sidebar-brand-mark">C</span><span>CredHealth<small>BY CREDAI TECHNOLOGIES</small></span></span>
         </a>
 
         <div class="sidebar-section-label">{{ __('Workspace') }}</div>
@@ -31,13 +31,26 @@
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 10h.01M15 10h.01M9 14h.01M15 14h.01M10 21v-4h4v4"/></svg>
                     <span>{{ __('Provider workspace') }}</span>
                 </a>
+                <a href="{{ route('provider.services.index') }}" @class(['sidebar-link', 'is-active' => request()->routeIs('provider.services.*')])>
+                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4zM8 9h8M8 13h5"/></svg>
+                    <span>{{ __('Manage services') }}</span>
+                </a>
             @endif
 
             @if($userRole === 'admin')
-                <a href="{{ route('admin.dashboard') }}" @class(['sidebar-link', 'is-active' => request()->routeIs('admin.*')])>
+                <a href="{{ route('admin.dashboard') }}" @class(['sidebar-link', 'is-active' => request()->routeIs('admin.dashboard')]) @if(request()->routeIs('admin.dashboard')) aria-current="page" @endif>
                     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V5M4 19h17M7 15l4-4 3 2 6-7"/><path d="M17 6h3v3"/></svg>
                     <span>{{ __('Admin control') }}</span>
                 </a>
+                <div class="sidebar-admin-links" aria-label="{{ __('Administration sections') }}">
+                    <a @class(['sidebar-link', 'sidebar-link--nested', 'is-active' => request()->routeIs('admin.dashboard')]) href="{{ route('admin.dashboard') }}" @if(request()->routeIs('admin.dashboard')) aria-current="page" @endif>{{ __('Overview') }}</a>
+                    <a @class(['sidebar-link', 'sidebar-link--nested', 'is-active' => request()->routeIs('admin.providers')]) href="{{ route('admin.providers') }}" @if(request()->routeIs('admin.providers')) aria-current="page" @endif>{{ __('Providers') }}</a>
+                    <a @class(['sidebar-link', 'sidebar-link--nested', 'is-active' => request()->routeIs('admin.policies')]) href="{{ route('admin.policies') }}" @if(request()->routeIs('admin.policies')) aria-current="page" @endif>{{ __('Policies') }}</a>
+                    <a @class(['sidebar-link', 'sidebar-link--nested', 'is-active' => request()->routeIs('admin.claims')]) href="{{ route('admin.claims') }}" @if(request()->routeIs('admin.claims')) aria-current="page" @endif>{{ __('Claims') }}</a>
+                    <a @class(['sidebar-link', 'sidebar-link--nested', 'is-active' => request()->routeIs('admin.payments')]) href="{{ route('admin.payments') }}" @if(request()->routeIs('admin.payments')) aria-current="page" @endif>{{ __('Payments') }}</a>
+                    <a @class(['sidebar-link', 'sidebar-link--nested', 'is-active' => request()->routeIs('admin.loans')]) href="{{ route('admin.loans') }}" @if(request()->routeIs('admin.loans')) aria-current="page" @endif>{{ __('Loans') }}</a>
+                    <a @class(['sidebar-link', 'sidebar-link--nested', 'is-active' => request()->routeIs('admin.activity')]) href="{{ route('admin.activity') }}" @if(request()->routeIs('admin.activity')) aria-current="page" @endif>{{ __('Activity log') }}</a>
+                </div>
             @endif
 
             <a href="{{ route('ai.index') }}" @class(['sidebar-link', 'is-active' => request()->routeIs('ai.*')])>

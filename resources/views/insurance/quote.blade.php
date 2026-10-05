@@ -4,17 +4,36 @@
             <div>
                 <p class="eyebrow">Smart protection</p>
                 <h1 class="page-title">Generate a policy quote</h1>
-                <p class="page-subtitle">Check the SIM balance, choose a cover type, and let AI recommend the best monthly premium.</p>
+                <p class="page-subtitle">{{ __('Choose a cover type and get a premium quote. Use a synced phone balance or enter an estimate for direct payment.') }}</p>
             </div>
         </div>
     </x-slot>
 
     <div class="form-shell">
         @if($errors->any())<div class="workspace-error">{{ $errors->first() }}</div>@endif
+        @auth
+            @if(in_array(auth()->user()->role, ['individual', 'business'], true))
+                <section class="surface-card mb-6">
+                    <div class="section-heading">
+                        <div>
+                            <span class="eyebrow">{{ __('Available mobile-money balance') }}</span>
+                            <h3>{{ number_format($verifiedBalance['balance'], 2) }} TZS</h3>
+                            <p class="empty-copy">{{ $verifiedBalance['transaction_count'] > 0
+                                ? __('Using :count verified transactions, less pending requests.', ['count' => $verifiedBalance['transaction_count']])
+                                : __('You can quote and pay directly now. Sync transactions to use a verified balance or apply for a loan.') }}</p>
+                        </div>
+                        <form method="POST" action="{{ route('transactions.sync') }}">
+                            @csrf
+                            <button type="submit" class="button button--green">{{ __('Sync transactions') }}</button>
+                        </form>
+                    </div>
+                </section>
+            @endif
+        @endauth
         <div class="form-intro">
             <span class="eyebrow">Balance-based protection</span>
             <h2>Tell us about the customer and the cover they need.</h2>
-            <p>The platform reads the available mobile-money balance and estimates a fair premium for the selected protection goal.</p>
+            <p>{{ __('Use a verified transaction balance when you have synced your phone, or enter an estimate to pay directly. Loan applications still require verified transaction history.') }}</p>
         </div>
 
         <form class="workspace-form" id="insurance-quote-form">
@@ -25,16 +44,27 @@
                     <input id="name" name="name" type="text" placeholder="Amina Mjanja" required>
                 </div>
                 <div class="form-field">
-                    <label for="phone">SIM phone number</label>
-                    <input id="phone" name="phone" type="text" placeholder="+255712345678" required>
+                    <label for="phone">{{ __('Mobile money phone number') }}</label>
+                    <input id="phone" name="phone" type="tel" autocomplete="tel" value="{{ old('phone', auth()->user()?->phone) }}" placeholder="+255712345678" required>
                 </div>
             </div>
 
             <div class="form-row">
-                <div class="form-field">
-                    <label for="sim_balance">SIM account balance (TZS)</label>
-                    <input id="sim_balance" name="sim_balance" type="number" min="0" step="1000" placeholder="250000" required>
-                </div>
+                @if(!auth()->check() || !in_array(auth()->user()->role, ['individual', 'business'], true))
+                    <div class="form-field">
+                        <label for="sim_balance">SIM account balance (TZS)</label>
+                        <input id="sim_balance" name="sim_balance" type="number" min="0" step="1000" placeholder="250000" required>
+                    </div>
+                @elseif($verifiedBalance['transaction_count'] > 0)
+                    <input id="sim_balance" name="sim_balance" type="hidden" value="{{ $verifiedBalance['balance'] }}">
+                    <div class="form-field"><span class="eyebrow">{{ __('Verified mobile-money balance') }}</span><strong>{{ number_format($verifiedBalance['balance'], 2) }} TZS</strong></div>
+                @else
+                    <div class="form-field">
+                        <label for="sim_balance">{{ __('Estimated mobile-money balance (TZS)') }}</label>
+                        <input id="sim_balance" name="sim_balance" type="number" min="0" step="1000" placeholder="250000" required>
+                        <small>{{ __('A verified phone transaction sync is required for a loan, but not for direct payment.') }}</small>
+                    </div>
+                @endif
                 <div class="form-field">
                     <label for="coverage_goal">Coverage goal</label>
                     <select id="coverage_goal" name="coverage_goal">
@@ -63,47 +93,60 @@
                     <span class="ai-badge" id="quote-ai-badge">{{ __('Rules-based preview') }}</span>
                 <p id="ai-summary">Your quote is ready.</p>
             </div>
+            <p class="empty-copy">{{ __('The CredHealth annual plan costs TZS :premium per year and provides TZS :cover in annual cover. The figures below are estimates based on your balance.', ['premium' => number_format((float) config('insurance.annual_premium', 50400), 0), 'cover' => number_format((float) config('insurance.annual_coverage', 100000), 0)]) }}</p>
             <ul class="ai-list">
-                <li><strong>Premium</strong><span id="quote-premium">0 TZS</span></li>
-                <li><strong>Coverage</strong><span id="quote-coverage">0 TZS</span></li>
+                <li><strong>{{ __('Estimated monthly premium') }}</strong><span id="quote-premium">0 TZS</span></li>
+                <li><strong>{{ __('Estimated coverage') }}</strong><span id="quote-coverage">0 TZS</span></li>
                 <li><strong>Risk</strong><span id="quote-risk">-</span></li>
                 <li><strong>Plan</strong><span id="quote-plan">-</span></li>
             </ul>
         </div>
 
-        @auth
+        @if(auth()->check() && in_array(auth()->user()->role, ['individual', 'business'], true))
             <div class="content-grid mt-6" id="checkout-actions" style="display: none;">
                 <section class="surface-card">
                     <div class="section-heading"><div><span class="eyebrow">{{ __('Direct payment') }}</span><h3>{{ __('Pay from mobile money') }}</h3></div></div>
-                    <p class="empty-copy">{{ __('This creates a payment request. The charge stays pending until the mobile-money API confirms it.') }}</p>
+                    <p class="empty-copy">{{ __('Choose an instant phone prompt or get a control number and pay it from your mobile-money menu. Coverage starts only after ClickPesa confirms the payment.') }}</p>
                     <form method="POST" action="{{ route('insurance.payments.store') }}" class="workspace-form checkout-form">
                         @csrf
                         <input type="hidden" name="phone" id="payment-phone">
-                        <div class="form-field"><label for="mobile_money_provider">{{ __('Mobile-money network') }}</label><select id="mobile_money_provider" name="mobile_money_provider" required><option value="airtel_money">Airtel Money</option><option value="mpesa">M-Pesa</option><option value="tigo_pesa">Tigo Pesa</option><option value="halopesa">HaloPesa</option></select></div>
-                        <button type="submit" class="button button--green">{{ __('Create payment request') }}</button>
+                        <p>{{ __('Premium to pay') }}: <strong id="payment-premium">—</strong></p>
+                        <div class="form-field">
+                            <label for="collection_method">{{ __('Mobile-money payment method') }}</label>
+                            <select id="collection_method" name="collection_method" required>
+                                <option value="ussd">{{ __('USSD phone prompt') }}</option>
+                                <option value="control_number">{{ __('Control number (pay from mobile-money menu)') }}</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="button button--green">{{ __('Continue to mobile-money payment') }}</button>
                     </form>
                 </section>
                 <section class="surface-card">
                     <div class="section-heading"><div><span class="eyebrow">{{ __('Loan option') }}</span><h3>{{ __('Apply for premium financing') }}</h3></div></div>
-                    <p class="empty-copy">{{ __('Loan approval requires a verified mobile-money balance and administrator review.') }}</p>
+                    <p class="empty-copy">{{ __('Financing is for the annual CredHealth plan. Sync verified transactions first. An insurer-directed loan creates a pending payment after approval; coverage starts only after ClickPesa confirms payment.') }}</p>
                     <form method="POST" action="{{ route('insurance.loans.store') }}" class="workspace-form checkout-form">
                         @csrf
-                        <div class="form-field"><label for="requested_amount">{{ __('Requested amount (TZS)') }}</label><input id="requested_amount" name="requested_amount" type="number" min="1000" max="10000000" step="1000" required></div>
+                        <p>{{ __('Financing amount') }}: <strong id="loan-premium">—</strong></p>
                         <div class="form-field"><label for="disbursement_destination">{{ __('Where should the loan be disbursed?') }}</label><select id="disbursement_destination" name="disbursement_destination" required><option value="insurer">{{ __('Pay the insurer directly') }}</option><option value="customer">{{ __('Disburse to my mobile-money account') }}</option></select></div>
                         <div class="form-field" id="disbursement-phone-field" hidden><label for="disbursement_phone">{{ __('Mobile-money phone number') }}</label><input id="disbursement_phone" name="disbursement_phone" type="tel" maxlength="30"></div>
                         <button type="submit" class="button button--green">{{ __('Submit loan application') }}</button>
                     </form>
                 </section>
             </div>
-        @else
+        @elseif(!auth()->check())
             <p class="workspace-status mt-6" id="checkout-login-prompt" style="display: none;">{{ __('Sign in to choose a payment or loan option.') }} <a href="{{ route('login') }}">{{ __('Log in') }}</a></p>
-        @endauth
+        @else
+            <p class="workspace-status mt-6">{{ __('Payment and premium-financing requests are available to customer accounts.') }}</p>
+        @endif
     </div>
+
+    <div id="quote-error" class="workspace-error" role="alert" hidden></div>
 
     <script>
         document.addEventListener('DOMContentLoaded', function () {
             const form = document.getElementById('insurance-quote-form');
             const result = document.getElementById('quote-result');
+            const quoteError = document.getElementById('quote-error');
             const checkoutActions = document.getElementById('checkout-actions');
             const checkoutLoginPrompt = document.getElementById('checkout-login-prompt');
             const disbursementDestination = document.getElementById('disbursement_destination');
@@ -119,34 +162,46 @@
 
             form.addEventListener('submit', async function (event) {
                 event.preventDefault();
+                quoteError.hidden = true;
 
-                const formData = new FormData(form);
-                const response = await fetch('{{ route('insurance.quote.store') }}', {
-                    method: 'POST',
-                    headers: {
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Accept': 'application/json',
-                    },
-                    body: formData,
-                });
+                try {
+                    const response = await fetch('{{ route('insurance.quote.store') }}', {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                        },
+                        body: new FormData(form),
+                    });
+                    const data = await response.json();
+                    if (!response.ok) {
+                        const validationMessage = Object.values(data.errors ?? {})[0]?.[0];
+                        throw new Error(data.message ?? validationMessage ?? '{{ __('Could not generate quote. Please try again.') }}');
+                    }
 
-                const data = await response.json();
-                document.getElementById('ai-summary').textContent = data.ai_summary;
-                document.getElementById('quote-ai-badge').textContent = data.ai_status === 'ready' ? 'AI' : '{{ __('Rules-based preview') }}';
-                document.getElementById('quote-premium').textContent = new Intl.NumberFormat('en-US').format(data.monthly_premium) + ' TZS';
-                document.getElementById('quote-coverage').textContent = new Intl.NumberFormat('en-US').format(data.coverage_amount) + ' TZS';
-                document.getElementById('quote-risk').textContent = data.risk_level;
-                document.getElementById('quote-plan').textContent = data.recommended_plan;
-                if (checkoutActions) {
-                    document.getElementById('payment-phone').value = document.getElementById('phone').value;
-                    document.getElementById('requested_amount').value = data.monthly_premium;
-                    document.getElementById('disbursement_phone').value = document.getElementById('phone').value;
-                    checkoutActions.style.display = 'grid';
+                    document.getElementById('ai-summary').textContent = data.ai_summary;
+                    document.getElementById('quote-ai-badge').textContent = data.ai_status === 'ready' ? 'AI' : '{{ __('Rules-based preview') }}';
+                    document.getElementById('quote-premium').textContent = new Intl.NumberFormat('en-US').format(data.monthly_premium) + ' TZS';
+                    document.getElementById('quote-coverage').textContent = new Intl.NumberFormat('en-US').format(data.coverage_amount) + ' TZS';
+                    document.getElementById('quote-risk').textContent = data.risk_level;
+                    document.getElementById('quote-plan').textContent = data.recommended_plan;
+                    if (checkoutActions) {
+                        document.getElementById('payment-phone').value = document.getElementById('phone').value;
+                        document.getElementById('payment-premium').textContent = new Intl.NumberFormat('en-US').format({{ (int) config('insurance.annual_premium', 50400) }}) + ' TZS / year';
+                        document.getElementById('loan-premium').textContent = new Intl.NumberFormat('en-US').format({{ (int) config('insurance.annual_premium', 50400) }}) + ' TZS / year';
+                        document.getElementById('disbursement_phone').value = document.getElementById('phone').value;
+                        checkoutActions.style.display = 'grid';
+                    }
+                    if (checkoutLoginPrompt) {
+                        checkoutLoginPrompt.style.display = 'block';
+                    }
+                    result.style.display = 'block';
+                } catch (error) {
+                    quoteError.textContent = error instanceof Error
+                        ? error.message
+                        : '{{ __('Could not generate quote. Please try again.') }}';
+                    quoteError.hidden = false;
                 }
-                if (checkoutLoginPrompt) {
-                    checkoutLoginPrompt.style.display = 'block';
-                }
-                result.style.display = 'block';
             });
         });
     </script>

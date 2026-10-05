@@ -20,6 +20,16 @@ class InsurancePolicy extends Model
         'end_date',
     ];
 
+    protected function casts(): array
+    {
+        return [
+            'premium' => 'decimal:2',
+            'coverage_amount' => 'decimal:2',
+            'start_date' => 'date',
+            'end_date' => 'date',
+        ];
+    }
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);

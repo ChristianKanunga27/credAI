@@ -1,5 +1,5 @@
 <x-guest-layout>
-    <div class="auth-title"><h2>{{ __('Create your CredAI account') }}</h2><p>{{ __('Start with your details. You can choose your role and complete your profile next.') }}</p></div>
+    <div class="auth-title"><h2>{{ __('Create your CredHealth account') }}</h2><p>{{ __('Start with your details. You can choose your role and complete your profile next.') }}</p></div>
     <form method="POST" action="{{ route('register') }}">
         @csrf
 

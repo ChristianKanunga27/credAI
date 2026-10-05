@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\InsuranceProfile;
 use App\Services\InsuranceQuoteService;
 use App\Services\OpenAIService;
+use App\Services\TransactionVerificationService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
@@ -16,12 +17,16 @@ class InsuranceQuoteController extends Controller
         private readonly OpenAIService $openAIService
     ) {}
 
-    public function create(): View
+    public function create(TransactionVerificationService $transactions): View
     {
-        return view('insurance.quote');
+        $balance = auth()->check()
+            ? $transactions->availableBalanceForUser(auth()->user())
+            : ['balance' => null, 'transaction_count' => 0, 'verified_at' => null];
+
+        return view('insurance.quote', ['verifiedBalance' => $balance]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request, TransactionVerificationService $transactions)
     {
         $validated = $request->validate([
             'name' => ['nullable', 'string', 'max:255'],
@@ -30,12 +35,21 @@ class InsuranceQuoteController extends Controller
             'coverage_goal' => ['nullable', 'string', 'in:family_protection,health_support,business_cover,travel_guard'],
         ]);
 
-        $simBalance = (float) ($validated['sim_balance'] ?? $this->insuranceQuoteService->checkSimBalance($validated['phone']));
+        $isCustomer = $request->user()
+            && in_array($request->user()->role, ['individual', 'business'], true);
+        $verifiedBalance = $isCustomer ? $transactions->availableBalanceForUser($request->user()) : null;
+        $hasVerifiedTransactions = $isCustomer && $verifiedBalance['transaction_count'] > 0;
+        $phone = $isCustomer && $hasVerifiedTransactions
+            ? (string) $request->user()->phone
+            : $validated['phone'];
+        $simBalance = $hasVerifiedTransactions
+            ? $verifiedBalance['balance']
+            : (float) ($validated['sim_balance'] ?? $this->insuranceQuoteService->checkSimBalance($validated['phone']));
 
         $quote = $this->insuranceQuoteService->buildQuote(
             $simBalance,
             $validated['coverage_goal'] ?? 'family_protection',
-            $validated['name'] ?? 'Customer'
+            $validated['name'] ?? $request->user()?->name ?? 'Customer'
         );
         $aiExplanation = $this->openAIService->explainQuote($quote, app()->getLocale());
         $quote['ai_summary'] = $aiExplanation ?? $quote['ai_summary'];
@@ -44,11 +58,15 @@ class InsuranceQuoteController extends Controller
             : ($this->openAIService->isConfigured() ? 'unavailable' : 'rules_based');
 
         if ($request->user()) {
+            if ($isCustomer && ! $hasVerifiedTransactions && $request->user()->phone !== $phone) {
+                $request->user()->forceFill(['phone' => $phone])->save();
+            }
+
             $profile = InsuranceProfile::updateOrCreate(
                 ['user_id' => $request->user()->id],
                 [
                     'full_name' => $validated['name'] ?? $request->user()->name,
-                    'phone' => $validated['phone'],
+                    'phone' => $phone,
                     'sim_balance' => $simBalance,
                     'coverage_goal' => $validated['coverage_goal'] ?? 'family_protection',
                     'risk_level' => $quote['risk_level'],
@@ -58,6 +76,9 @@ class InsuranceQuoteController extends Controller
                     'ai_summary' => $quote['ai_summary'],
                 ]
             );
+            $profile->forceFill([
+                'balance_verified_at' => $hasVerifiedTransactions ? now() : null,
+            ])->save();
 
             DB::table('audit_events')->insert([
                 'actor_id' => $request->user()->id,
