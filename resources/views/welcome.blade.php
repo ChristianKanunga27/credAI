@@ -21,7 +21,7 @@
             --c-white: #ffffff;
             --c-muted: #5f6f69;
             --c-line: #dfe8df;
-            --c-coral: #e77d62;
+            --c-coral: #f5f6f7;
             --c-forest: #0f2d29;
         }
 

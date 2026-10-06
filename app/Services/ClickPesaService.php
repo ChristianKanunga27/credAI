@@ -41,15 +41,25 @@ class ClickPesaService
             && collect($activeMethods)->contains(fn ($method): bool => is_array($method)
                 && strtoupper((string) ($method['status'] ?? '')) === 'AVAILABLE');
         if (! $preview->successful() || ! $hasAvailableMethod) {
+            $providerMessage = $preview->json('message');
+            if ($preview->successful() && ! $hasAvailableMethod) {
+                $providerMessage = 'Payment method is not active';
+            }
+
             Log::warning('ClickPesa mobile-money payment preview was rejected', [
                 'payment_id' => $payment->id,
                 'http_status' => $preview->status(),
-                'provider_message' => $preview->json('message'),
+                'provider_message' => $providerMessage,
+                'active_methods' => is_array($activeMethods)
+                    ? array_map(fn ($method) => is_array($method)
+                        ? ['name' => $method['name'] ?? null, 'status' => $method['status'] ?? null]
+                        : null, $activeMethods)
+                    : null,
             ]);
             throw new ClickPesaPaymentException(
                 'ClickPesa could not validate the mobile-money number or amount.',
                 $preview->status(),
-                is_string($preview->json('message')) ? $preview->json('message') : null,
+                is_string($providerMessage) ? $providerMessage : null,
             );
         }
 
@@ -123,6 +133,35 @@ class ClickPesaService
         }
 
         return ['control_number' => trim($controlNumber)];
+    }
+
+    public function deactivateControlNumber(InsurancePayment $payment): void
+    {
+        $controlNumber = trim((string) $payment->clickpesa_control_number);
+        if ($controlNumber === '') {
+            throw new ClickPesaPaymentException('ClickPesa control number is missing.');
+        }
+
+        $url = $this->url('third-parties/billpay/'.rawurlencode($controlNumber));
+        $response = $this->send(fn (PendingRequest $request): Response => $request->patch($url, [
+            'billStatus' => 'INACTIVE',
+        ]));
+
+        if (! $response->successful()
+            || $response->json('billPayNumber') !== $controlNumber
+            || strtoupper((string) $response->json('billStatus')) !== 'INACTIVE') {
+            Log::warning('ClickPesa control-number deactivation was rejected', [
+                'payment_id' => $payment->id,
+                'http_status' => $response->status(),
+                'provider_message' => $response->json('message'),
+            ]);
+
+            throw new ClickPesaPaymentException(
+                'ClickPesa could not deactivate the earlier control number.',
+                $response->status(),
+                is_string($response->json('message')) ? $response->json('message') : null,
+            );
+        }
     }
 
     /**

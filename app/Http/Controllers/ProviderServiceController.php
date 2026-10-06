@@ -170,39 +170,30 @@ class ProviderServiceController extends Controller
                 'provider_reference' => $result['provider_reference'] ?: null,
             ])->save();
         } catch (ClickPesaPaymentException $exception) {
-            $payment->forceFill(['status' => 'failed'])->save();
+            try {
+                $result = $clickPesa->createControlNumber($payment);
+                $payment->forceFill([
+                    'collection_method' => 'control_number',
+                    'clickpesa_control_number' => $result['control_number'],
+                    'status' => 'pending',
+                ])->save();
 
-            if ($payment->collection_method === 'ussd' && $exception->shouldFallbackToControlNumber()) {
-                try {
-                    $result = $clickPesa->createControlNumber($payment);
-                    $payment->forceFill([
-                        'collection_method' => 'control_number',
-                        'clickpesa_control_number' => $result['control_number'],
-                        'status' => 'pending',
-                    ])->save();
-
-                    return redirect()->route('dashboard')->with('status', __('USSD is not active on this ClickPesa network. Pay for :service from your mobile-money menu using control number :number.', [
-                        'service' => $service->name,
-                        'number' => $result['control_number'],
-                    ]));
-                } catch (\Throwable $fallbackException) {
-                    $payment->forceFill(['status' => 'failed'])->save();
-                    if (! $fallbackException instanceof ClickPesaPaymentException) {
-                        report($fallbackException);
-                    }
-
-                    return back()->with('error', $fallbackException instanceof ClickPesaPaymentException
-                        ? $fallbackException->customerMessage()
-                        : __('USSD and control-number payment could not be started. Please check ClickPesa BillPay settings or contact support.'));
-                }
+                return back()->with('status', __('Pay TZS :amount for :service using mobile money control number :number.', [
+                    'amount' => number_format((float) $payment->amount, 2),
+                    'service' => $service->name,
+                    'number' => $result['control_number'],
+                ]));
+            } catch (\Throwable $e) {
+                report($e);
             }
 
+            $payment->forceFill(['status' => 'failed'])->save();
             return back()->with('error', $exception->customerMessage());
         } catch (\Throwable $exception) {
             $payment->forceFill(['status' => 'failed'])->save();
             report($exception);
 
-            return back()->with('error', __('ClickPesa could not start the payment. Please try the control-number option or contact support.'));
+            return back()->with('error', __('ClickPesa could not send the USSD prompt. Please check your phone number and try again, or contact support.'));
         }
 
         return redirect()->route('dashboard')->with('status', __('Approve the TZS :amount payment request on your phone to complete it.', [

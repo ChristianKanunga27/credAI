@@ -40,18 +40,12 @@
                         <p class="empty-copy">{{ __('Approve the ClickPesa payment prompt on your phone to complete payment.') }}</p>
                         <form method="POST" action="{{ route('insurance.services.pay', $service) }}" class="workspace-form">
                             @csrf
-                            <div class="form-field">
-                                <label for="service-method-{{ $service->id }}">{{ __('Mobile-money payment method') }}</label>
-                                <select id="service-method-{{ $service->id }}" name="collection_method" required>
-                                    <option value="ussd">{{ __('USSD phone prompt') }}</option>
-                                    <option value="control_number">{{ __('Control number') }}</option>
-                                </select>
-                            </div>
+                            <input type="hidden" name="collection_method" value="ussd">
                             <div class="form-field">
                                 <label for="service-phone-{{ $service->id }}">{{ __('Mobile-money phone number') }}</label>
                                 <input id="service-phone-{{ $service->id }}" name="phone" type="tel" maxlength="30" value="{{ old('phone', $phone) }}" required>
                             </div>
-                            <button type="submit" class="button button--green">{{ __('Send payment prompt to my phone') }}</button>
+                            <button type="submit" class="button button--green">{{ __('Send USSD payment prompt') }}</button>
                         </form>
                     </article>
                 @empty

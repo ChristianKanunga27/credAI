@@ -55,65 +55,101 @@ class InsuranceCheckoutController extends Controller
         if ($existingPayment) {
             if ($existingPayment->collection_method === 'control_number'
                 && filled($existingPayment->clickpesa_control_number)) {
-                return redirect()->route('dashboard')->with('status', __('Pay the pending annual plan using control number :number, then wait for payment confirmation.', [
-                    'number' => $existingPayment->clickpesa_control_number,
-                ]));
-            }
+                try {
+                    $gatewayStatus = $clickPesa->verifyPayment($existingPayment->clickpesa_control_number);
+                    if (in_array($gatewayStatus['status'], ['SUCCESS', 'SETTLED'], true)) {
+                        $amountMatches = number_format((float) $gatewayStatus['amount'], 2, '.', '')
+                            === number_format((float) $existingPayment->amount, 2, '.', '');
+                        if ($gatewayStatus['order_reference'] === $existingPayment->clickpesa_control_number
+                            && $gatewayStatus['currency'] === strtoupper($existingPayment->currency)
+                            && $gatewayStatus['reference'] !== ''
+                            && $amountMatches) {
+                            $confirmations->confirm(
+                                $existingPayment,
+                                $gatewayStatus['reference'],
+                                InsurancePaymentConfirmationSource::Gateway,
+                            );
 
-            try {
-                $gatewayStatus = $clickPesa->verifyPayment($existingPayment->reference);
-            } catch (\Throwable $exception) {
-                report($exception);
+                            return redirect()->route('insurance.card')->with('status', __('Your earlier payment was confirmed. Your insurance card is ready.'));
+                        }
 
-                return back()->with('error', __('An earlier payment (:reference) is still awaiting ClickPesa confirmation. Its status could not be checked right now; please wait a moment and try again.', [
-                    'reference' => $existingPayment->reference,
-                ]));
-            }
+                        return back()->with('error', __('ClickPesa reported success for the earlier payment, but the amount or receipt could not be verified. Please contact support before paying again.'));
+                    }
 
-            if (in_array($gatewayStatus['status'], ['SUCCESS', 'SETTLED'], true)) {
-                $amountMatches = number_format((float) $gatewayStatus['amount'], 2, '.', '')
-                    === number_format((float) $existingPayment->amount, 2, '.', '');
-                if ($gatewayStatus['order_reference'] === $existingPayment->reference
-                    && $gatewayStatus['currency'] === strtoupper($existingPayment->currency)
-                    && $gatewayStatus['reference'] !== ''
-                    && $amountMatches) {
-                    $confirmations->confirm(
-                        $existingPayment,
-                        $gatewayStatus['reference'],
-                        InsurancePaymentConfirmationSource::Gateway,
-                    );
+                    $clickPesa->deactivateControlNumber($existingPayment);
+                    DB::transaction(function () use ($request, $existingPayment): void {
+                        $payment = InsurancePayment::query()
+                            ->whereKey($existingPayment->id)
+                            ->lockForUpdate()
+                            ->firstOrFail();
+                        abort_unless(in_array($payment->status, ['pending', 'processing'], true), 409);
+                        $payment->forceFill(['status' => 'cancelled'])->save();
+                        $this->recordActivity($request, $payment, 'insurance_payment.control_number_deactivated_for_ussd', [
+                            'reference' => $payment->reference,
+                            'control_number' => $payment->clickpesa_control_number,
+                        ]);
+                    });
+                } catch (\Throwable $exception) {
+                    report($exception);
 
-                    return redirect()->route('insurance.card')->with('status', __('Your earlier payment was confirmed. Your insurance card is ready.'));
+                    return back()->with('error', __('Your earlier control number could not be safely closed. Please contact support before starting another payment.'));
+                }
+            } else {
+                try {
+                    $gatewayStatus = $clickPesa->verifyPayment($existingPayment->reference);
+                } catch (\Throwable $exception) {
+                    report($exception);
+
+                    return back()->with('error', __('An earlier payment (:reference) is still awaiting ClickPesa confirmation. Its status could not be checked right now; please wait a moment and try again.', [
+                        'reference' => $existingPayment->reference,
+                    ]));
                 }
 
-                return back()->with('error', __('ClickPesa reported success for payment :reference, but the amount or receipt could not be verified. Please contact support before paying again.', [
-                    'reference' => $existingPayment->reference,
-                ]));
-            }
+                if (in_array($gatewayStatus['status'], ['SUCCESS', 'SETTLED'], true)) {
+                    $amountMatches = number_format((float) $gatewayStatus['amount'], 2, '.', '')
+                        === number_format((float) $existingPayment->amount, 2, '.', '');
+                    if ($gatewayStatus['order_reference'] === $existingPayment->reference
+                        && $gatewayStatus['currency'] === strtoupper($existingPayment->currency)
+                        && $gatewayStatus['reference'] !== ''
+                        && $amountMatches) {
+                        $confirmations->confirm(
+                            $existingPayment,
+                            $gatewayStatus['reference'],
+                            InsurancePaymentConfirmationSource::Gateway,
+                        );
 
-            if ($gatewayStatus['status'] === 'FAILED') {
-                DB::transaction(function () use ($existingPayment): void {
-                    $payment = InsurancePayment::query()->whereKey($existingPayment->id)->lockForUpdate()->firstOrFail();
-                    if (in_array($payment->status, ['pending', 'processing'], true)) {
-                        $payment->forceFill(['status' => 'failed'])->save();
-                        DB::table('audit_events')->insert([
-                            'actor_id' => null,
-                            'event' => 'insurance_payment.failed',
-                            'auditable_type' => InsurancePayment::class,
-                            'auditable_id' => $payment->id,
-                            'metadata' => json_encode([
-                                'reference' => $payment->reference,
-                                'confirmation_source' => 'clickpesa_status_check',
-                            ], JSON_THROW_ON_ERROR),
-                            'created_at' => now(),
-                            'updated_at' => now(),
-                        ]);
+                        return redirect()->route('insurance.card')->with('status', __('Your earlier payment was confirmed. Your insurance card is ready.'));
                     }
-                });
-            } else {
-                return back()->with('error', __('Payment :reference is still processing. Approve the existing request on your phone or wait for ClickPesa to finish before starting another.', [
-                    'reference' => $existingPayment->reference,
-                ]));
+
+                    return back()->with('error', __('ClickPesa reported success for payment :reference, but the amount or receipt could not be verified. Please contact support before paying again.', [
+                        'reference' => $existingPayment->reference,
+                    ]));
+                }
+
+                if ($gatewayStatus['status'] === 'FAILED') {
+                    DB::transaction(function () use ($existingPayment): void {
+                        $payment = InsurancePayment::query()->whereKey($existingPayment->id)->lockForUpdate()->firstOrFail();
+                        if (in_array($payment->status, ['pending', 'processing'], true)) {
+                            $payment->forceFill(['status' => 'failed'])->save();
+                            DB::table('audit_events')->insert([
+                                'actor_id' => null,
+                                'event' => 'insurance_payment.failed',
+                                'auditable_type' => InsurancePayment::class,
+                                'auditable_id' => $payment->id,
+                                'metadata' => json_encode([
+                                    'reference' => $payment->reference,
+                                    'confirmation_source' => 'clickpesa_status_check',
+                                ], JSON_THROW_ON_ERROR),
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    });
+                } else {
+                    return back()->with('error', __('Payment :reference is still processing. Approve the existing request on your phone or wait for ClickPesa to finish before starting another.', [
+                        'reference' => $existingPayment->reference,
+                    ]));
+                }
             }
         }
 
@@ -169,38 +205,29 @@ class InsuranceCheckoutController extends Controller
                 'provider_reference' => $result['provider_reference'] ?: null,
             ])->save();
         } catch (ClickPesaPaymentException $exception) {
-            $payment->forceFill(['status' => 'failed'])->save();
+            try {
+                $result = $clickPesa->createControlNumber($payment);
+                $payment->forceFill([
+                    'collection_method' => 'control_number',
+                    'clickpesa_control_number' => $result['control_number'],
+                    'status' => 'pending',
+                ])->save();
 
-            if ($payment->collection_method === 'ussd' && $exception->shouldFallbackToControlNumber()) {
-                try {
-                    $result = $clickPesa->createControlNumber($payment);
-                    $payment->forceFill([
-                        'collection_method' => 'control_number',
-                        'clickpesa_control_number' => $result['control_number'],
-                        'status' => 'pending',
-                    ])->save();
-
-                    return redirect()->route('dashboard')->with('status', __('USSD is not active on this ClickPesa network. Pay the annual plan from your mobile-money menu using control number :number.', [
-                        'number' => $result['control_number'],
-                    ]));
-                } catch (\Throwable $fallbackException) {
-                    $payment->forceFill(['status' => 'failed'])->save();
-                    if (! $fallbackException instanceof ClickPesaPaymentException) {
-                        report($fallbackException);
-                    }
-
-                    return back()->with('error', $fallbackException instanceof ClickPesaPaymentException
-                        ? $fallbackException->customerMessage()
-                        : __('USSD and control-number payment could not be started. Please check ClickPesa BillPay settings or contact support.'));
-                }
+                return redirect()->route('dashboard')->with('status', __('Pay TZS :amount using mobile money and control number :number. Coverage starts after ClickPesa confirms payment.', [
+                    'amount' => number_format((float) $payment->amount, 0),
+                    'number' => $result['control_number'],
+                ]));
+            } catch (\Throwable $e) {
+                report($e);
             }
 
+            $payment->forceFill(['status' => 'failed'])->save();
             return back()->with('error', $exception->customerMessage());
         } catch (\Throwable $exception) {
             $payment->forceFill(['status' => 'failed'])->save();
             report($exception);
 
-            return back()->with('error', __('ClickPesa could not start the payment. Please try the control-number option or contact support.'));
+            return back()->with('error', __('ClickPesa could not send the USSD prompt. Please check your phone number and try again, or contact support.'));
         }
 
         return redirect()->route('dashboard')->with('status', __('Approve the TZS :amount payment request on your phone to complete it.', [

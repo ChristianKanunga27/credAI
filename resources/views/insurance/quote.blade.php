@@ -106,19 +106,13 @@
             <div class="content-grid mt-6" id="checkout-actions" style="display: none;">
                 <section class="surface-card">
                     <div class="section-heading"><div><span class="eyebrow">{{ __('Direct payment') }}</span><h3>{{ __('Pay from mobile money') }}</h3></div></div>
-                    <p class="empty-copy">{{ __('Choose an instant phone prompt or get a control number and pay it from your mobile-money menu. Coverage starts only after ClickPesa confirms the payment.') }}</p>
+                    <p class="empty-copy">{{ __('Choose USSD phone prompt to receive a payment request on your phone. Enter your mobile-money PIN to approve it. Coverage starts only after ClickPesa confirms the payment.') }}</p>
                     <form method="POST" action="{{ route('insurance.payments.store') }}" class="workspace-form checkout-form">
                         @csrf
                         <input type="hidden" name="phone" id="payment-phone">
+                        <input type="hidden" name="collection_method" value="ussd">
                         <p>{{ __('Premium to pay') }}: <strong id="payment-premium">—</strong></p>
-                        <div class="form-field">
-                            <label for="collection_method">{{ __('Mobile-money payment method') }}</label>
-                            <select id="collection_method" name="collection_method" required>
-                                <option value="ussd">{{ __('USSD phone prompt') }}</option>
-                                <option value="control_number">{{ __('Control number (pay from mobile-money menu)') }}</option>
-                            </select>
-                        </div>
-                        <button type="submit" class="button button--green">{{ __('Continue to mobile-money payment') }}</button>
+                        <button type="submit" class="button button--green">{{ __('Send USSD payment prompt') }}</button>
                     </form>
                 </section>
                 <section class="surface-card">
