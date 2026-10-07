@@ -30,11 +30,19 @@ Route::get('/language/{locale}', function (string $locale) {
 })->name('language.switch');
 
 Route::get('/brand/logo', function () {
-    $logo = storage_path('logs/logo.jpg');
+    $candidates = [
+        public_path('images/logo.jpg'),
+        public_path('images/logo.jpeg'),
+        storage_path('logs/logo.jpg'),
+    ];
 
-    abort_unless(is_file($logo), 404);
+    foreach ($candidates as $logo) {
+        if (is_file($logo)) {
+            return response()->file($logo, ['Cache-Control' => 'public, max-age=86400']);
+        }
+    }
 
-    return response()->file($logo, ['Cache-Control' => 'public, max-age=86400']);
+    abort(404);
 })->name('brand.logo');
 
 Route::post('/clickpesa/webhook', ClickPesaWebhookController::class)
