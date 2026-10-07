@@ -873,7 +873,7 @@
             <div class="process-grid">
                 <article class="process-step">
                     <b>01 / CHECK</b>
-                    <h3>Review the customer balance.</h3>
+                    <h3>Reviews the customer balance.</h3>
                     <p>Assess the real mobile-money balance that supports monthly premium capacity.</p>
                 </article>
                 <article class="process-step">
