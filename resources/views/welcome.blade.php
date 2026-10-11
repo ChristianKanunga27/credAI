@@ -773,7 +773,7 @@
                 <span class="art-title">CredHealth protection index</span>
                 <div class="readiness-card">
                     <small>Estimated monthly premium</small>
-                    <strong>3,500<span>TZS</span></strong>
+                    <strong>50,400<span>TZS</span></strong>
                     <p>Based on a healthy mobile balance and a family protection plan.</p>
                 </div>
 
