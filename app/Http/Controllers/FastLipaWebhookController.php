@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\InsurancePaymentConfirmationSource;
 use App\Models\InsurancePayment;
-use App\Services\ClickPesaService;
+use App\Services\FastLipaService;
 use App\Services\InsurancePaymentConfirmationService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -12,16 +12,16 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
-class ClickPesaWebhookController extends Controller
+class FastLipaWebhookController extends Controller
 {
     public function __invoke(
         Request $request,
-        ClickPesaService $clickPesa,
+        FastLipaService $fastLipa,
         InsurancePaymentConfirmationService $confirmations,
     ): JsonResponse {
         $payload = $request->all();
         $data = is_array($payload['data'] ?? null) ? $payload['data'] : $payload;
-        $orderReference = $data['orderReference'] ?? null;
+        $orderReference = $data['reference'] ?? $data['orderReference'] ?? null;
 
         if (! is_string($orderReference) || $orderReference === '') {
             return response()->json(['received' => false, 'message' => 'Missing order reference.'], 422);
@@ -29,18 +29,18 @@ class ClickPesaWebhookController extends Controller
 
         $payment = InsurancePayment::query()
             ->where('reference', $orderReference)
-            ->orWhere('clickpesa_control_number', $orderReference)
+            ->orWhere('fastlipa_control_number', $orderReference)
             ->first();
         if (! $payment) {
-            Log::notice('ClickPesa notification references an unknown payment', ['order_reference' => $orderReference]);
+            Log::notice('FastLipa notification references an unknown payment', ['order_reference' => $orderReference]);
 
             return response()->json(['received' => true]);
         }
 
         try {
-            $verified = $clickPesa->verifyPayment($orderReference);
+            $verified = $fastLipa->verifyPayment($orderReference);
         } catch (RuntimeException $exception) {
-            Log::warning('ClickPesa payment notification could not be verified', [
+            Log::warning('FastLipa payment notification could not be verified', [
                 'payment_id' => $payment->id,
                 'message' => $exception->getMessage(),
             ]);
@@ -48,22 +48,22 @@ class ClickPesaWebhookController extends Controller
             return response()->json(['received' => false, 'message' => 'Payment status verification is temporarily unavailable.'], 503);
         }
 
-        $expectedOrderReference = $payment->clickpesa_control_number ?: $payment->reference;
+        $expectedOrderReference = $payment->fastlipa_control_number ?: $payment->reference;
         if ($verified['order_reference'] !== $expectedOrderReference) {
-            Log::error('ClickPesa order reference mismatch', ['payment_id' => $payment->id]);
+            Log::error('FastLipa order reference mismatch', ['payment_id' => $payment->id]);
 
             return response()->json(['received' => true]);
         }
 
-        if (! in_array($verified['status'], ['SUCCESS', 'SETTLED', 'FAILED'], true)) {
-            return response()->json(['received' => false, 'message' => 'ClickPesa has not reported a final payment status yet.'], 503);
+        if (! in_array($verified['status'], ['SUCCESS', 'SETTLED', 'COMPLETED', 'FAILED'], true)) {
+            return response()->json(['received' => false, 'message' => 'FastLipa has not reported a final payment status yet.'], 503);
         }
 
-        if (in_array($verified['status'], ['SUCCESS', 'SETTLED'], true)) {
+        if (in_array($verified['status'], ['SUCCESS', 'SETTLED', 'COMPLETED'], true)) {
             $amountMatches = number_format((float) $verified['amount'], 2, '.', '')
                 === number_format((float) $payment->amount, 2, '.', '');
             if (! $amountMatches || $verified['currency'] !== strtoupper($payment->currency) || $verified['reference'] === '') {
-                Log::error('ClickPesa payment amount, currency, or receipt did not match the local order', [
+                Log::error('FastLipa payment amount, currency, or receipt did not match the local order', [
                     'payment_id' => $payment->id,
                     'verified_currency' => $verified['currency'],
                 ]);
@@ -88,7 +88,7 @@ class ClickPesaWebhookController extends Controller
                         'auditable_id' => $lockedPayment->id,
                         'metadata' => json_encode([
                             'reference' => $lockedPayment->reference,
-                            'confirmation_source' => 'clickpesa',
+                            'confirmation_source' => 'fastlipa',
                             'message' => $verified['message'],
                         ], JSON_THROW_ON_ERROR),
                         'created_at' => now(),

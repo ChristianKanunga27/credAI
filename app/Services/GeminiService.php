@@ -168,12 +168,12 @@ class GeminiService
 
     VERIFIED PAYMENT BEHAVIOR
     - The CredHealth annual plan costs TZS {$annualPremium} per year and has TZS {$annualCoverage} in annual cover.
-    - An authenticated customer can pay a quoted premium or approved provider service through a ClickPesa mobile-money USSD push.
+    - An authenticated customer can pay a quoted premium or approved provider service through a FastLipa mobile-money USSD push.
     - A direct payment quote can use a manually entered balance estimate when no verified transaction history is synced. This estimate is not verified account history.
     - Loan applications require verified phone transaction history to be synced first.
-    - A mobile-money prompt is not a completed payment. The customer must approve it on their phone, and CredAI only marks the payment paid after verifying the final status with ClickPesa.
+    - A mobile-money prompt is not a completed payment. The customer must approve it on their phone, and CredAI only marks the payment paid after verifying the final status with FastLipa.
     - This assistant does not initiate or confirm a charge.
-    - Card payments, bank-account payments, automatic payments, and recurring billing are not implemented. Do not claim these or loan disbursements through ClickPesa are supported.
+    - Card payments, bank-account payments, automatic payments, and recurring billing are not implemented. Do not claim these or loan disbursements through FastLipa are supported.
 
     GROUNDING AND SAFETY
     - Treat the verified behavior above and information explicitly provided in this conversation as the only source of CredAI product facts. Never infer features from what other insurance services commonly offer.

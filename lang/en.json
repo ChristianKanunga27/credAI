@@ -174,5 +174,9 @@
     "Rules-based preview": "Rules-based preview",
     "Quote explanation": "Quote explanation",
     "Your protection guide": "Your protection guide",
-    "Get context-aware help with quotes, payments, loans, claims, and next steps.": "Get context-aware help with quotes, payments, loans, claims, and next steps."
+    "Get context-aware help with quotes, payments, loans, claims, and next steps.": "Get context-aware help with quotes, payments, loans, claims, and next steps.",
+    "time.morning": "morning",
+    "time.afternoon": "afternoon",
+    "time.evening": "evening",
+    "time.night": "night"
 }

@@ -50,7 +50,7 @@
             <section class="surface-card">
                 <span class="eyebrow">{{ __('No active policy') }}</span>
                 <h3>{{ __('Your card will be available after premium payment is confirmed.') }}</h3>
-                <p class="empty-copy">{{ __('Start the annual plan, approve the ClickPesa request on your phone, then return here after confirmation.') }}</p>
+                <p class="empty-copy">{{ __('Start the annual plan, approve the FastLipa request on your phone, then return here after confirmation.') }}</p>
                 <a href="{{ route('insurance.quote') }}" class="button button--green mt-4">{{ __('Get coverage') }}</a>
             </section>
         @endif

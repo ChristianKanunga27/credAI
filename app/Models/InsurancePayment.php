@@ -18,7 +18,7 @@ class InsurancePayment extends Model
         'insurance_policy_id',
         'payment_type',
         'collection_method',
-        'clickpesa_control_number',
+        'fastlipa_control_number',
         'provider_service_id',
         'reference',
         'mobile_money_provider',

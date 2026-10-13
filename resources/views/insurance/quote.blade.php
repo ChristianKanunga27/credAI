@@ -106,7 +106,7 @@
             <div class="content-grid mt-6" id="checkout-actions" style="display: none;">
                 <section class="surface-card">
                     <div class="section-heading"><div><span class="eyebrow">{{ __('Direct payment') }}</span><h3>{{ __('Pay from mobile money') }}</h3></div></div>
-                    <p class="empty-copy">{{ __('Choose USSD phone prompt to receive a payment request on your phone. Enter your mobile-money PIN to approve it. Coverage starts only after ClickPesa confirms the payment.') }}</p>
+                    <p class="empty-copy">{{ __('Choose USSD phone prompt to receive a payment request on your phone. Enter your mobile-money PIN to approve it. Coverage starts only after FastLipa confirms the payment.') }}</p>
                     <form method="POST" action="{{ route('insurance.payments.store') }}" class="workspace-form checkout-form">
                         @csrf
                         <input type="hidden" name="phone" id="payment-phone">
@@ -117,7 +117,7 @@
                 </section>
                 <section class="surface-card">
                     <div class="section-heading"><div><span class="eyebrow">{{ __('Loan option') }}</span><h3>{{ __('Apply for premium financing') }}</h3></div></div>
-                    <p class="empty-copy">{{ __('Financing is for the annual CredHealth plan. Sync verified transactions first. An insurer-directed loan creates a pending payment after approval; coverage starts only after ClickPesa confirms payment.') }}</p>
+                    <p class="empty-copy">{{ __('Financing is for the annual CredHealth plan. Sync verified transactions first. An insurer-directed loan creates a pending payment after approval; coverage starts only after FastLipa confirms payment.') }}</p>
                     <form method="POST" action="{{ route('insurance.loans.store') }}" class="workspace-form checkout-form">
                         @csrf
                         <p>{{ __('Financing amount') }}: <strong id="loan-premium">—</strong></p>

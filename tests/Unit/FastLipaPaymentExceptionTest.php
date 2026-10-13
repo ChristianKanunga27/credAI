@@ -1,6 +1,6 @@
 <?php
 
-use App\Exceptions\ClickPesaPaymentException;
+use App\Exceptions\FastLipaPaymentException;
 use Illuminate\Container\Container;
 
 test('insufficient mobile-money funds explain why the USSD prompt was not sent', function () {
@@ -14,8 +14,8 @@ test('insufficient mobile-money funds explain why the USSD prompt was not sent',
     });
     Container::setInstance($container);
 
-    $exception = new ClickPesaPaymentException(
-        'ClickPesa could not send the mobile-money payment prompt.',
+    $exception = new FastLipaPaymentException(
+        'FastLipa could not send the mobile-money payment prompt.',
         400,
         'Insufficient funds in your Halopesa account. Please top up and try again.',
     );

@@ -7,25 +7,17 @@ use Illuminate\Http\Client\Request;
 use Illuminate\Support\Facades\Http;
 
 beforeEach(function () {
-    config()->set('services.clickpesa.client_id', 'test-client');
-    config()->set('services.clickpesa.api_key', 'test-api-key');
-    config()->set('services.clickpesa.api_url', 'https://api.clickpesa.com');
-    config()->set('services.clickpesa.timeout', 15);
+    config()->set('services.fastlipa.api_key', 'test-api-key');
+    config()->set('services.fastlipa.api_url', 'https://api.fastlipa.com');
+    config()->set('services.fastlipa.timeout', 15);
 });
 
-test('customer receives a ClickPesa USSD prompt without transaction history', function () {
+test('customer receives a FastLipa mobile-money prompt without transaction history', function () {
     Http::fake([
-        '*api.clickpesa.com/third-parties/generate-token' => Http::response([
-            'success' => true,
-            'token' => 'Bearer test-token',
-        ]),
-        '*api.clickpesa.com/third-parties/payments/preview-ussd-push-request' => Http::response([
-            'activeMethods' => [['name' => 'M-PESA', 'status' => 'AVAILABLE']],
-        ]),
-        '*api.clickpesa.com/third-parties/payments/initiate-ussd-push-request' => fn (Request $request) => Http::response([
-            'id' => 'CLICKPESA-ID-123',
-            'status' => 'PROCESSING',
-            'orderReference' => $request['orderReference'],
+        '*api.fastlipa.com/v1/payments/mobile-money' => fn (Request $request) => Http::response([
+            'id' => 'FASTLIPA-ID-123',
+            'status' => 'PENDING',
+            'reference' => $request['reference'],
         ]),
     ]);
 
@@ -52,24 +44,22 @@ test('customer receives a ClickPesa USSD prompt without transaction history', fu
     $payment = InsurancePayment::query()->firstOrFail();
     expect($payment->reference)->toMatch('/^[A-Z0-9]{20}$/');
     expect($payment->status)->toBe('processing');
-    expect($payment->provider_reference)->toBe('CLICKPESA-ID-123');
+    expect($payment->provider_reference)->toBe('FASTLIPA-ID-123');
 
-    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/third-parties/generate-token')
-        && $request->hasHeader('client-id', 'test-client')
-        && $request->hasHeader('api-key', 'test-api-key'));
-    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/third-parties/payments/initiate-ussd-push-request')
-        && $request->hasHeader('Authorization', 'Bearer test-token')
-        && $request['orderReference'] === $payment->reference
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/v1/payments/mobile-money')
+        && $request->hasHeader('Authorization', 'Bearer test-api-key')
+        && $request['reference'] === $payment->reference
         && $request['amount'] === '50400.00'
         && $request['currency'] === 'TZS'
-        && $request['phoneNumber'] === '255712345678');
+        && $request['phone_number'] === '255712345678'
+        && $request['callback_url'] === route('fastlipa.webhook'));
 });
 
 test('customer can create a mobile-money control number for the annual plan', function () {
     Http::fake([
-        '*api.clickpesa.com/third-parties/generate-token' => Http::response(['token' => 'Bearer test-token']),
-        '*api.clickpesa.com/third-parties/billpay/create-customer-control-number' => fn (Request $request) => Http::response([
-            'billPayNumber' => $request['billReference'],
+        '*api.fastlipa.com/v1/payments/control-number' => fn (Request $request) => Http::response([
+            'control_number' => $request['reference'],
+            'status' => 'ACTIVE',
         ]),
     ]);
 
@@ -92,24 +82,22 @@ test('customer can create a mobile-money control number for the annual plan', fu
     expect($payment->collection_method)->toBe('control_number')
         ->and($payment->status)->toBe('pending')
         ->and($payment->amount)->toBe('50400.00')
-        ->and($payment->clickpesa_control_number)->toMatch('/^[0-9]{14}$/');
-    Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/third-parties/billpay/create-customer-control-number')
-        && $request['billAmount'] === 50400
-        && $request['billPaymentMode'] === 'EXACT'
-        && $request['customerPhone'] === '255712345678');
+        ->and($payment->fastlipa_control_number)->toMatch('/^[0-9]{14}$/');
+    Http::assertSent(fn (Request $request): bool => str_ends_with($request->url(), '/v1/payments/control-number')
+        && $request['amount'] === 50400.0
+        && $request['currency'] === 'TZS'
+        && $request['customer_phone'] === '255712345678'
+        && $request['callback_url'] === route('fastlipa.webhook'));
 });
 
-test('inactive ClickPesa USSD network automatically falls back to a control number', function () {
+test('rejected FastLipa mobile-money prompt automatically falls back to a control number', function () {
     Http::fake([
-        '*api.clickpesa.com/third-parties/generate-token' => Http::response(['token' => 'Bearer test-token']),
-        '*api.clickpesa.com/third-parties/payments/preview-ussd-push-request' => Http::response([
-            'activeMethods' => [['name' => 'M-Pesa', 'status' => 'AVAILABLE']],
-        ]),
-        '*api.clickpesa.com/third-parties/payments/initiate-ussd-push-request' => Http::response([
+        '*api.fastlipa.com/v1/payments/mobile-money' => Http::response([
             'message' => 'M-Pesa payment method is not active',
         ], 400),
-        '*api.clickpesa.com/third-parties/billpay/create-customer-control-number' => fn (Request $request) => Http::response([
-            'billPayNumber' => $request['billReference'],
+        '*api.fastlipa.com/v1/payments/control-number' => fn (Request $request) => Http::response([
+            'control_number' => $request['reference'],
+            'status' => 'ACTIVE',
         ]),
     ]);
 
@@ -155,7 +143,7 @@ test('customer can generate a direct-payment quote without syncing transaction h
     ]);
 });
 
-test('ClickPesa webhook confirms a payment only after querying ClickPesa', function () {
+test('FastLipa webhook confirms a payment only after querying FastLipa', function () {
     $customer = User::factory()->create(['role' => 'individual']);
     $payment = InsurancePayment::create([
         'user_id' => $customer->id,
@@ -167,30 +155,25 @@ test('ClickPesa webhook confirms a payment only after querying ClickPesa', funct
     ]);
 
     Http::fake([
-        '*api.clickpesa.com/third-parties/generate-token' => Http::response([
-            'success' => true,
-            'token' => 'Bearer test-token',
-        ]),
-        '*api.clickpesa.com/third-parties/payments/ORDER123456ABC' => Http::response([[
-            'id' => 'CLICKPESA-PAYMENT-ID',
+        '*api.fastlipa.com/v1/payments/ORDER123456ABC' => Http::response([
+            'transaction_id' => 'FASTLIPA-PAYMENT-ID',
             'status' => 'SUCCESS',
-            'paymentReference' => 'RECEIPT123',
-            'orderReference' => 'ORDER123456ABC',
-            'collectedAmount' => '50400.00',
-            'collectedCurrency' => 'TZS',
-        ]]),
+            'reference' => 'ORDER123456ABC',
+            'amount' => '50400.00',
+            'currency' => 'TZS',
+        ]),
     ]);
 
-    $response = $this->postJson(route('clickpesa.webhook'), [
-        'event' => 'PAYMENT RECEIVED',
-        'data' => ['orderReference' => $payment->reference, 'status' => 'SUCCESS'],
+    $response = $this->postJson(route('fastlipa.webhook'), [
+        'event' => 'payment.received',
+        'data' => ['reference' => $payment->reference, 'status' => 'SUCCESS'],
     ]);
 
     $response->assertOk()->assertJson(['received' => true]);
     $this->assertDatabaseHas('insurance_payments', [
         'id' => $payment->id,
         'status' => 'paid',
-        'provider_reference' => 'RECEIPT123',
+        'provider_reference' => 'FASTLIPA-PAYMENT-ID',
         'confirmation_source' => 'gateway',
     ]);
     $this->assertDatabaseHas('insurance_policies', [
@@ -200,15 +183,15 @@ test('ClickPesa webhook confirms a payment only after querying ClickPesa', funct
         'status' => 'active',
     ]);
     expect($payment->fresh()->policy)->not->toBeNull();
-    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/third-parties/payments/ORDER123456ABC'));
+    Http::assertSent(fn (Request $request) => str_ends_with($request->url(), '/v1/payments/ORDER123456ABC'));
 });
 
-test('ClickPesa confirms a control-number payment after a verified BillPay webhook', function () {
+test('FastLipa confirms a control-number payment after a verified webhook', function () {
     $customer = User::factory()->create(['role' => 'individual']);
     $payment = InsurancePayment::create([
         'user_id' => $customer->id,
         'collection_method' => 'control_number',
-        'clickpesa_control_number' => '12345678901234',
+        'fastlipa_control_number' => '12345678901234',
         'reference' => 'ORDERCONTROL1234',
         'phone' => '+255712345678',
         'amount' => 50400,
@@ -217,26 +200,24 @@ test('ClickPesa confirms a control-number payment after a verified BillPay webho
     ]);
 
     Http::fake([
-        '*api.clickpesa.com/third-parties/generate-token' => Http::response(['token' => 'Bearer test-token']),
-        '*api.clickpesa.com/third-parties/payments/12345678901234' => Http::response([[
-            'id' => 'CLICKPESA-BILLPAY-ID',
+        '*api.fastlipa.com/v1/payments/12345678901234' => Http::response([
+            'transaction_id' => 'FASTLIPA-CONTROL-ID',
             'status' => 'SUCCESS',
-            'paymentReference' => 'BILLPAY-RECEIPT-1234',
-            'orderReference' => '12345678901234',
-            'collectedAmount' => '50400.00',
-            'collectedCurrency' => 'TZS',
-        ]]),
+            'reference' => '12345678901234',
+            'amount' => '50400.00',
+            'currency' => 'TZS',
+        ]),
     ]);
 
-    $this->postJson(route('clickpesa.webhook'), [
-        'event' => 'PAYMENT RECEIVED',
-        'data' => ['orderReference' => '12345678901234', 'status' => 'SUCCESS'],
+    $this->postJson(route('fastlipa.webhook'), [
+        'event' => 'payment.received',
+        'data' => ['reference' => '12345678901234', 'status' => 'SUCCESS'],
     ])->assertOk()->assertJson(['received' => true]);
 
     $this->assertDatabaseHas('insurance_payments', [
         'id' => $payment->id,
         'status' => 'paid',
-        'provider_reference' => 'BILLPAY-RECEIPT-1234',
+        'provider_reference' => 'FASTLIPA-CONTROL-ID',
     ]);
     $this->assertDatabaseHas('insurance_policies', [
         'user_id' => $customer->id,
@@ -246,7 +227,7 @@ test('ClickPesa confirms a control-number payment after a verified BillPay webho
     ]);
 });
 
-test('ClickPesa webhook does not confirm when the collected amount does not match', function () {
+test('FastLipa webhook does not confirm when the collected amount does not match', function () {
     $customer = User::factory()->create(['role' => 'individual']);
     $payment = InsurancePayment::create([
         'user_id' => $customer->id,
@@ -258,18 +239,17 @@ test('ClickPesa webhook does not confirm when the collected amount does not matc
     ]);
 
     Http::fake([
-        '*api.clickpesa.com/third-parties/generate-token' => Http::response(['token' => 'Bearer test-token']),
-        '*api.clickpesa.com/third-parties/payments/ORDERDIFFERENT123' => Http::response([[
+        '*api.fastlipa.com/v1/payments/ORDERDIFFERENT123' => Http::response([
+            'transaction_id' => 'FASTLIPA-RECEIPT',
             'status' => 'SUCCESS',
-            'paymentReference' => 'RECEIPT123',
-            'orderReference' => 'ORDERDIFFERENT123',
-            'collectedAmount' => '3000.00',
-            'collectedCurrency' => 'TZS',
-        ]]),
+            'reference' => 'ORDERDIFFERENT123',
+            'amount' => '3000.00',
+            'currency' => 'TZS',
+        ]),
     ]);
 
-    $this->postJson(route('clickpesa.webhook'), [
-        'data' => ['orderReference' => $payment->reference],
+    $this->postJson(route('fastlipa.webhook'), [
+        'data' => ['reference' => $payment->reference],
     ])->assertOk();
 
     $this->assertDatabaseHas('insurance_payments', ['id' => $payment->id, 'status' => 'pending']);

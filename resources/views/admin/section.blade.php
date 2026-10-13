@@ -109,9 +109,9 @@
                             <div class="admin-record-main">
                                 <strong>{{ $record->user?->name }} · TZS {{ number_format((float) $record->amount, 0) }}</strong>
                                 <small>{{ $record->reference }} · {{ $record->provider_reference ?: __('Provider reference not recorded') }} · {{ $record->phone }}</small>
-                                <small>{{ $record->mobile_money_provider ? __(ucfirst(str_replace('_', ' ', $record->mobile_money_provider))) : ($record->loanApplication?->provider?->organization_name ?? __('ClickPesa')) }} · {{ $record->policy?->policy_number ?? __('No policy linked') }}</small>
-                                @if($record->clickpesa_control_number)
-                                    <small>{{ __('BillPay control number') }}: {{ $record->clickpesa_control_number }}</small>
+                                <small>{{ $record->mobile_money_provider ? __(ucfirst(str_replace('_', ' ', $record->mobile_money_provider))) : ($record->loanApplication?->provider?->organization_name ?? __('FastLipa')) }} · {{ $record->policy?->policy_number ?? __('No policy linked') }}</small>
+                                @if($record->fastlipa_control_number)
+                                    <small>{{ __('Control number') }}: {{ $record->fastlipa_control_number }}</small>
                                 @endif
                                 @if($record->loanApplication)
                                     <small>{{ __('Premium financing loan') }} · {{ $record->loanApplication->reference }} · {{ $record->loanApplication->provider?->organization_name ?? __('Lender unassigned') }}</small>

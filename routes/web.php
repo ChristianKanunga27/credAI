@@ -3,7 +3,7 @@
 use App\Http\Controllers\AdminDashboardController;
 use App\Http\Controllers\BusinessProfileController;
 use App\Http\Controllers\BusinessTransactionController;
-use App\Http\Controllers\ClickPesaWebhookController;
+use App\Http\Controllers\FastLipaWebhookController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FundingApplicationController;
 use App\Http\Controllers\GeminiChatController;
@@ -45,8 +45,8 @@ Route::get('/brand/logo', function () {
     abort(404);
 })->name('brand.logo');
 
-Route::post('/clickpesa/webhook', ClickPesaWebhookController::class)
-    ->name('clickpesa.webhook');
+Route::post('/fastlipa/webhook', FastLipaWebhookController::class)
+    ->name('fastlipa.webhook');
 
 Route::get('/dashboard', DashboardController::class)
     ->middleware(['auth', 'verified'])

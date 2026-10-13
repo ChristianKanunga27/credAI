@@ -2,12 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\ClickPesaPaymentException;
+use App\Exceptions\FastLipaPaymentException;
 use App\Models\InsurancePayment;
 use App\Models\InsuranceProvider;
 use App\Models\ProviderService;
 use App\Models\User;
-use App\Services\ClickPesaService;
+use App\Services\FastLipaService;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -83,10 +83,10 @@ class ProviderServiceController extends Controller
     public function pay(
         Request $request,
         ProviderService $service,
-        ClickPesaService $clickPesa,
+        FastLipaService $fastLipa,
     ): RedirectResponse {
-        if (! $clickPesa->isConfigured()) {
-            return back()->with('error', __('ClickPesa is not configured yet. Add CLICKPESA_CLIENT_ID and CLICKPESA_API_KEY to the server environment.'));
+        if (! $fastLipa->isConfigured()) {
+            return back()->with('error', __('FastLipa is not configured yet. Add FASTLIPA_API_KEY to the server environment.'));
         }
 
         if (! $request->exists('collection_method')) {
@@ -151,9 +151,9 @@ class ProviderServiceController extends Controller
 
         try {
             if ($payment->collection_method === 'control_number') {
-                $result = $clickPesa->createControlNumber($payment);
+                $result = $fastLipa->createControlNumber($payment);
                 $payment->forceFill([
-                    'clickpesa_control_number' => $result['control_number'],
+                    'fastlipa_control_number' => $result['control_number'],
                     'status' => 'pending',
                 ])->save();
 
@@ -164,17 +164,17 @@ class ProviderServiceController extends Controller
                 ]));
             }
 
-            $result = $clickPesa->initiateMobileMoneyPayment($payment);
+            $result = $fastLipa->initiateMobileMoneyPayment($payment);
             $payment->forceFill([
                 'status' => 'processing',
                 'provider_reference' => $result['provider_reference'] ?: null,
             ])->save();
-        } catch (ClickPesaPaymentException $exception) {
+        } catch (FastLipaPaymentException $exception) {
             try {
-                $result = $clickPesa->createControlNumber($payment);
+                $result = $fastLipa->createControlNumber($payment);
                 $payment->forceFill([
                     'collection_method' => 'control_number',
-                    'clickpesa_control_number' => $result['control_number'],
+                    'fastlipa_control_number' => $result['control_number'],
                     'status' => 'pending',
                 ])->save();
 
@@ -193,7 +193,7 @@ class ProviderServiceController extends Controller
             $payment->forceFill(['status' => 'failed'])->save();
             report($exception);
 
-            return back()->with('error', __('ClickPesa could not send the USSD prompt. Please check your phone number and try again, or contact support.'));
+            return back()->with('error', __('FastLipa could not send the USSD prompt. Please check your phone number and try again, or contact support.'));
         }
 
         return redirect()->route('dashboard')->with('status', __('Approve the TZS :amount payment request on your phone to complete it.', [

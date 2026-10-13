@@ -5,7 +5,7 @@
                 <p class="eyebrow">
                     {{ $role === 'insurer' ? 'Insurance workspace' : ($role === 'admin' ? 'Admin workspace' : 'Personal workspace') }}
                 </p>
-                <h1 class="page-title">Good morning, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
+                <h1 class="page-title">{{ greeting_label() }}, {{ Str::before(auth()->user()->name, ' ') }}.</h1>
                 <p class="page-subtitle">
                     {{ $role === 'insurer'
                         ? 'Review policy demand, underwriting risk, and AI recommendations in one clear view.'
@@ -199,9 +199,9 @@
                                 <strong>{{ $payment->reference }}</strong>
                                 <small>TZS {{ number_format((float) $payment->amount, 0) }} · {{ $payment->providerService
                                     ? __(':service at :provider', ['service' => $payment->providerService->name, 'provider' => $payment->providerService->provider?->organization_name])
-                                    : ($payment->loanApplication ? __('Premium financing') : __('Insurance premium')) }} · {{ $payment->mobile_money_provider ? __(ucfirst(str_replace('_', ' ', $payment->mobile_money_provider))) : __('ClickPesa') }}</small>
-                                @if($payment->clickpesa_control_number && $payment->status !== 'paid')
-                                    <small><strong>{{ __('Control number') }}: {{ $payment->clickpesa_control_number }}</strong></small>
+                                    : ($payment->loanApplication ? __('Premium financing') : __('Insurance premium')) }} · {{ $payment->mobile_money_provider ? __(ucfirst(str_replace('_', ' ', $payment->mobile_money_provider))) : __('FastLipa') }}</small>
+                                @if($payment->fastlipa_control_number && $payment->status !== 'paid')
+                                    <small><strong>{{ __('Control number') }}: {{ $payment->fastlipa_control_number }}</strong></small>
                                     <small>{{ __('Use Pay Bill / Lipa kwa Simu in your mobile-money app, enter this number and the exact amount, then return here after payment.') }}</small>
                                 @endif
                                 @if($payment->status === 'paid')

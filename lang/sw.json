@@ -174,7 +174,7 @@
     "Quote explanation": "Maelezo ya nukuu",
     "Your protection guide": "Mwongozo wako wa ulinzi",
     "Get context-aware help with quotes, payments, loans, claims, and next steps.": "Pata msaada unaohusiana na nukuu, malipo, mikopo, madai na hatua zinazofuata.",
-    "ClickPesa rejected the USSD request because the mobile-money account for this phone number has insufficient funds. Add the payment amount and any provider fees, then try again. No USSD prompt was sent.": "ClickPesa imekataa ombi la USSD kwa sababu akaunti ya pesa kwa simu ya nambari hii haina salio la kutosha. Weka kiasi cha malipo pamoja na ada za mtoa huduma, kisha ujaribu tena. Ombi la USSD halikutumwa.",
+    "FastLipa rejected the USSD request because the mobile-money account for this phone number has insufficient funds. Add the payment amount and any provider fees, then try again. No USSD prompt was sent.": "FastLipa imekataa ombi la USSD kwa sababu akaunti ya pesa kwa simu ya nambari hii haina salio la kutosha. Weka kiasi cha malipo pamoja na ada za mtoa huduma, kisha ujaribu tena. Ombi la USSD halikutumwa.",
     "Manage services": "Dhibiti huduma",
     "Create and update the services customers can book from your approved organization.": "Tengeneza na sasisha huduma ambazo wateja wanaweza kuweka nafasi kupitia taasisi yako iliyoidhinishwa.",
     "Provider approval required": "Idhini ya mtoa huduma inahitajika",
@@ -183,5 +183,9 @@
     "Create a service": "Tengeneza huduma",
     "Customer catalog": "Orodha ya huduma kwa wateja",
     "Your published services": "Huduma ulizochapisha",
-    "Create services, update prices, or pause bookings from the service management page.": "Tengeneza huduma, sasisha bei, au sitisha nafasi kupitia ukurasa wa usimamizi wa huduma."
+    "Create services, update prices, or pause bookings from the service management page.": "Tengeneza huduma, sasisha bei, au sitisha nafasi kupitia ukurasa wa usimamizi wa huduma.",
+    "time.morning": "asubuhi",
+    "time.afternoon": "mchana",
+    "time.evening": "jioni",
+    "time.night": "usiku"
 }

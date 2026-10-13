@@ -37,7 +37,7 @@
                         <p>{{ $service->description }}</p>
                         <p><strong>{{ $service->provider->organization_name }}</strong></p>
                         <p><strong>TZS {{ number_format((float) $service->price, 2) }}</strong></p>
-                        <p class="empty-copy">{{ __('Approve the ClickPesa payment prompt on your phone to complete payment.') }}</p>
+                        <p class="empty-copy">{{ __('Approve the FastLipa payment prompt on your phone to complete payment.') }}</p>
                         <form method="POST" action="{{ route('insurance.services.pay', $service) }}" class="workspace-form">
                             @csrf
                             <input type="hidden" name="collection_method" value="ussd">

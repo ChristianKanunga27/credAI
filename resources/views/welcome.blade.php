@@ -721,43 +721,43 @@
     </style>
 </head>
 <body class="credai-home">
-    <header>
-        <nav class="home-nav home-wrap" aria-label="Main navigation">
-            <a href="{{ url('/') }}" class="logo">
-                <img src="{{ route('brand.logo') }}" alt="CredHealth logo">
-            </a>
+        <header>
+            <nav class="home-nav home-wrap" aria-label="Main navigation">
+                <a href="{{ url('/') }}" class="logo">
+                    <img src="{{ route('brand.logo') }}" alt="CredHealth logo">
+                </a>
 
-            <div class="home-nav-links">
-                <a href="#platform">{{ __('Platform') }}</a>
-                <a href="#how-it-works">{{ __('How it works') }}</a>
-                <a href="#roles">{{ __('For providers') }}</a>
-                <a href="#roles">{{ __('For hospitals') }}</a>
-                <a href="{{ route('ai.index') }}">{{ __('AI guide') }}</a>
-            </div>
-
-            <div class="home-nav-actions">
-                <div class="language-switcher">
-                    <label for="language">{{ __('Language') }}</label>
-                    <select id="language" onchange="window.location.href = this.value">
-                        <option value="{{ route('language.switch', 'en') }}" @selected(app()->getLocale() === 'en')>{{ __('English') }}</option>
-                        <option value="{{ route('language.switch', 'sw') }}" @selected(app()->getLocale() === 'sw')>{{ __('Swahili') }}</option>
-                    </select>
+                <div class="home-nav-links">
+                    <a href="#platform">{{ __('Platform') }}</a>
+                    <a href="#how-it-works">{{ __('How it works') }}</a>
+                    <a href="#roles">{{ __('For providers') }}</a>
+                    <a href="#roles">{{ __('For hospitals') }}</a>
+                    <a href="{{ route('ai.index') }}">{{ __('AI guide') }}</a>
                 </div>
 
-                @auth
-                    <a class="home-cta-small" href="{{ route('dashboard') }}">{{ __('Open dashboard') }}</a>
-                @else
-                    <a class="home-login" href="{{ route('login') }}">{{ __('Log in') }}</a>
-                    <a class="home-cta-small" href="{{ route('register') }}">{{ __('Get started') }}</a>
-                @endauth
-            </div>
-        </nav>
-    </header>
+                <div class="home-nav-actions">
+                    <div class="language-switcher">
+                        <label for="language">{{ __('Language') }}</label>
+                        <select id="language" onchange="window.location.href = this.value">
+                            <option value="{{ route('language.switch', 'en') }}" @selected(app()->getLocale() === 'en')>{{ __('English') }}</option>
+                            <option value="{{ route('language.switch', 'sw') }}" @selected(app()->getLocale() === 'sw')>{{ __('Swahili') }}</option>
+                        </select>
+                    </div>
 
-    <main class="home-wrap">
-        <section class="hero">
-            <div class="hero-copy">
-                <span class="kicker">Protection built on real mobile value</span>
+                    @auth
+                        <a class="home-cta-small" href="{{ route('dashboard') }}">{{ __('Open dashboard') }}</a>
+                    @else
+                        <a class="home-login" href="{{ route('login') }}">{{ __('Log in') }}</a>
+                        <a class="home-cta-small" href="{{ route('register') }}">{{ __('Get started') }}</a>
+                    @endauth
+                </div>
+            </nav>
+        </header>
+
+        <main class="home-wrap">
+            <section class="hero">
+                <div class="hero-copy">
+                    <span class="kicker">{{ greeting_label() }}</span>
                 <h1 class="hero-brand">CredHealth</h1>
                 <p class="hero-description">CredHealth helps people, families, and insurers use <strong>mobile-money balance intelligence</strong> and <strong>CredAI guidance</strong> to make insurance decisions that are fairer, clearer, and easier to trust.</p>
 

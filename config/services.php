@@ -35,15 +35,13 @@ return [
         ],
     ],
 
-    'clickpesa' => [
-        'client_id' => env('CLICKPESA_CLIENT_ID'),
-        'api_key' => env('CLICKPESA_API_KEY'),
-        'api_url' => rtrim(env('CLICKPESA_API_URL', 'https://api.clickpesa.com'), '/'),
-        'timeout' => (int) env('CLICKPESA_API_TIMEOUT', 15),
-        'token_cache_seconds' => (int) env('CLICKPESA_TOKEN_CACHE_SECONDS', 3500),
+    'fastlipa' => [
+        'api_key' => env('FASTLIPA_API_KEY'),
+        'api_url' => rtrim(env('FASTLIPA_API_URL', 'https://api.fastlipa.com'), '/'),
+        'timeout' => (int) env('FASTLIPA_API_TIMEOUT', 15),
     ],
 
-    // Optional account-history connector; ClickPesa checkout does not expose a customer's wallet statement.
+    // Optional account-history connector; FastLipa checkout does not expose a customer's wallet statement.
     'transaction_api' => [
         'name' => env('TRANSACTION_API_NAME', 'Phone transaction provider'),
         'url' => env('TRANSACTION_API_URL'),

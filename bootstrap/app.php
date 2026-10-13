@@ -16,7 +16,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->web(append: [SetLocale::class]);
         $middleware->alias(['role' => EnsureRole::class]);
-        $middleware->validateCsrfTokens(except: ['clickpesa/webhook']);
+        $middleware->validateCsrfTokens(except: ['fastlipa/webhook']);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
