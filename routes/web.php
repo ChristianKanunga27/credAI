@@ -17,6 +17,7 @@ use App\Http\Controllers\ProviderServiceController;
 use App\Http\Controllers\TransactionSyncController;
 use Illuminate\Support\Facades\Route;
 
+//home roots
 Route::get('/', function () {
     return view('welcome');
 });
