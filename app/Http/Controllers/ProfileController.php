@@ -30,6 +30,8 @@ class ProfileController extends Controller
 
         if ($request->user()->isDirty('email')) {
             $request->user()->email_verified_at = null;
+            $request->user()->otp = null;
+            $request->user()->otp_expires_at = null;
         }
 
         $request->user()->save();

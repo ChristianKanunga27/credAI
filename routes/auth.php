@@ -36,16 +36,16 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('verify-email', EmailVerificationPromptController::class)
+    Route::get('verify-email', [App\Http\Controllers\Auth\OtpVerificationController::class, 'show'])
         ->name('verification.notice');
 
-    Route::get('verify-email/{id}/{hash}', VerifyEmailController::class)
-        ->middleware(['signed', 'throttle:6,1'])
-        ->name('verification.verify');
-
-    Route::post('email/verification-notification', [EmailVerificationNotificationController::class, 'store'])
+    Route::post('email/verification-send', [App\Http\Controllers\Auth\OtpVerificationController::class, 'sendOtp'])
         ->middleware('throttle:6,1')
-        ->name('verification.send');
+        ->name('verification.otp.send');
+
+    Route::post('email/verification-verify', [App\Http\Controllers\Auth\OtpVerificationController::class, 'verifyOtp'])
+        ->middleware('throttle:5,1')
+        ->name('verification.otp.verify');
 
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])
         ->name('password.confirm');
