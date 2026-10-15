@@ -41,4 +41,20 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(MobileMoneyTransaction::class);
     }
+
+    public function hasVerifiedEmail(): bool
+    {
+        return ! is_null($this->email_verified_at);
+    }
+
+    public function markEmailAsVerified(): bool
+    {
+        if ($this->hasVerifiedEmail()) {
+            return false;
+        }
+
+        $this->forceFill(['email_verified_at' => $this->freshTimestamp()])->save();
+
+        return true;
+    }
 }
