@@ -7,6 +7,7 @@ use Illuminate\Auth\Events\Verified;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 use Illuminate\View\View;
 
 class OtpVerificationController extends Controller
@@ -18,11 +19,6 @@ class OtpVerificationController extends Controller
     {
         if ($request->user()->hasVerifiedEmail()) {
             return redirect()->intended(route('dashboard', absolute: false));
-        }
-
-        // If the user has no active OTP, generate and send one now
-        if (! $request->user()->otp || ! $request->user()->otp_expires_at || $request->user()->otp_expires_at->isPast()) {
-            $request->user()->generateAndSendOtp();
         }
 
         return view('auth.verify-otp', ['user' => $request->user()]);
@@ -67,25 +63,29 @@ class OtpVerificationController extends Controller
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        // Check if OTP matches and is not expired
-        if ($user->otp &&
-            $user->otp_expires_at &&
-            $user->otp_expires_at->isFuture() &&
-            Hash::check($request->otp, $user->otp)) {
+        try {
+            // Check if OTP matches and is not expired
+            if ($user->otp &&
+                $user->otp_expires_at &&
+                $user->otp_expires_at->isFuture() &&
+                Hash::check($request->otp, $user->otp)) {
 
-            // Mark email as verified
-            if ($user->markEmailAsVerified()) {
-                event(new Verified($user));
+                // Mark email as verified
+                if ($user->markEmailAsVerified()) {
+                    event(new Verified($user));
+                }
+
+                // Clear OTP fields
+                $user->forceFill([
+                    'otp' => null,
+                    'otp_expires_at' => null,
+                ])->save();
+
+                return redirect()->intended(route('dashboard', absolute: false))
+                    ->with('status', 'verified');
             }
-
-            // Clear OTP fields
-            $user->forceFill([
-                'otp' => null,
-                'otp_expires_at' => null,
-            ])->save();
-
-            return redirect()->intended(route('dashboard', absolute: false))
-                ->with('status', 'verified');
+        } catch (\Throwable $e) {
+            Log::error('OTP verification failed: '.$e->getMessage());
         }
 
         // If OTP is invalid or expired
