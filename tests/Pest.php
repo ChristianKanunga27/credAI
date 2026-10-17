@@ -48,3 +48,17 @@ function something()
 {
     // ..
 }
+
+/**
+ * Make the mailer fail so notification mail delivery throws.
+ */
+function mockMailerFailure(): void
+{
+    $mailer = Mockery::mock(\Illuminate\Contracts\Mail\Mailer::class);
+    $mailer->shouldReceive('send')->andThrow(new RuntimeException('SMTP connection refused'));
+
+    $factory = Mockery::mock(\Illuminate\Contracts\Mail\Factory::class);
+    $factory->shouldReceive('mailer')->andReturn($mailer);
+
+    app()->instance(\Illuminate\Contracts\Mail\Factory::class, $factory);
+}

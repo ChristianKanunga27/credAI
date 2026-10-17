@@ -14,6 +14,12 @@
         </div>
     @endif
 
+    @if (session('otp_send_failed'))
+        <div class="mb-4 font-medium text-sm text-red-600 dark:text-red-400">
+            {{ __('Failed to send OTP email. Please try again.') }}
+        </div>
+    @endif
+
     @if ($errors->any())
         <div class="mb-4 p-4 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md">
             <div class="font-medium text-red-800 dark:text-red-200">{{ __('Please correct the following errors:') }}</div>

@@ -101,3 +101,32 @@ test('already verified user is redirected from email verification screen', funct
 
     $response->assertRedirect(route('dashboard', absolute: false));
 });
+
+test('otp is cleared when the email cannot be sent', function () {
+    $user = User::factory()->unverified()->create([
+        'otp' => null,
+        'otp_expires_at' => null,
+    ]);
+
+    mockMailerFailure();
+
+    $sent = $user->generateAndSendOtp();
+
+    expect($sent)->toBeFalse();
+    expect($user->fresh()->otp)->toBeNull();
+    expect($user->fresh()->otp_expires_at)->toBeNull();
+});
+
+test('verification screen reports a failed otp email', function () {
+    $user = User::factory()->unverified()->create([
+        'otp' => null,
+        'otp_expires_at' => null,
+    ]);
+
+    mockMailerFailure();
+
+    $response = $this->actingAs($user)->get('/verify-email');
+
+    $response->assertStatus(200);
+    $response->assertSessionHas('otp_send_failed', true);
+});

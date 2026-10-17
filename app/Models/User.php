@@ -2,14 +2,17 @@
 
 namespace App\Models;
 
-use Illuminate\Contracts\Auth\MustVerifyEmail;
+use App\Notifications\VerifyEmailOtpNotification;
 use Database\Factories\UserFactory;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 #[Fillable(['name', 'email', 'password', 'role', 'phone', 'avatar_url', 'otp', 'otp_expires_at'])]
 #[Hidden(['password', 'remember_token'])]
@@ -75,15 +78,25 @@ class User extends Authenticatable implements MustVerifyEmail
             $otp = (string) mt_rand(100000, 999999);
 
             $this->forceFill([
-                'otp' => \Illuminate\Support\Facades\Hash::make($otp),
+                'otp' => Hash::make($otp),
                 'otp_expires_at' => now()->addMinutes(15),
             ])->save();
 
-            $this->notify(new \App\Notifications\VerifyEmailOtpNotification($otp));
+            // Deliver synchronously so a mail failure is reported here instead of
+            // silently failing on a worker after the OTP has already been stored.
+            $this->notifyNow(new VerifyEmailOtpNotification($otp));
 
             return true;
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('Failed to generate or send OTP verification email to '.$this->email.': '.$e->getMessage());
+            // Clear the unusable OTP so the user is prompted for a new one.
+            $this->forceFill([
+                'otp' => null,
+                'otp_expires_at' => null,
+            ])->save();
+
+            Log::error('Failed to generate or send OTP verification email to '.$this->email.': '.$e->getMessage(), [
+                'exception' => $e,
+            ]);
 
             return false;
         }

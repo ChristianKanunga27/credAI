@@ -17,11 +17,29 @@ class OtpVerificationController extends Controller
      */
     public function show(Request $request): View|RedirectResponse
     {
-        if ($request->user()->hasVerifiedEmail()) {
+        $user = $request->user();
+
+        if ($user->hasVerifiedEmail()) {
             return redirect()->intended(route('dashboard', absolute: false));
         }
 
-        return view('auth.verify-otp', ['user' => $request->user()]);
+        // Send a fresh code when the user has no usable OTP, so the verification
+        // screen is never shown without a code they can actually use.
+        $hasUsableOtp = $user->otp
+            && $user->otp_expires_at
+            && $user->otp_expires_at->isFuture();
+
+        if (! $hasUsableOtp) {
+            $sent = $user->generateAndSendOtp();
+
+            if ($sent) {
+                session()->flash('status', 'otp-sent');
+            } else {
+                session()->flash('otp_send_failed', true);
+            }
+        }
+
+        return view('auth.verify-otp', ['user' => $user]);
     }
 
     /**
