@@ -40,9 +40,15 @@ Route::middleware('auth')->group(function () {
         ->name('verification.notice');
 
     Route::post('email/verification-send', [App\Http\Controllers\Auth\OtpVerificationController::class, 'sendOtp'])
+        ->middleware('throttle:6,1')
         ->name('verification.otp.send');
 
+    Route::post('email/verification-notification', [App\Http\Controllers\Auth\OtpVerificationController::class, 'sendOtp'])
+        ->middleware('throttle:6,1')
+        ->name('verification.send');
+
     Route::post('email/verification-verify', [App\Http\Controllers\Auth\OtpVerificationController::class, 'verifyOtp'])
+        ->middleware('throttle:10,1')
         ->name('verification.otp.verify');
 
     Route::get('confirm-password', [ConfirmablePasswordController::class, 'show'])

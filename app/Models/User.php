@@ -57,4 +57,35 @@ class User extends Authenticatable implements MustVerifyEmail
 
         return true;
     }
+
+    /**
+     * Send the email verification notification containing the OTP.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        $this->generateAndSendOtp();
+    }
+
+    /**
+     * Generate a new 6-digit OTP, store its hash and expiration, and send notification.
+     */
+    public function generateAndSendOtp(): bool
+    {
+        $otp = (string) mt_rand(100000, 999999);
+
+        $this->forceFill([
+            'otp' => \Illuminate\Support\Facades\Hash::make($otp),
+            'otp_expires_at' => now()->addMinutes(15),
+        ])->save();
+
+        try {
+            $this->notify(new \App\Notifications\VerifyEmailOtpNotification($otp));
+
+            return true;
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::error('Failed to send OTP verification email to '.$this->email.': '.$e->getMessage());
+
+            return false;
+        }
+    }
 }

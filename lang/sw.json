@@ -187,5 +187,16 @@
     "time.morning": "asubuhi",
     "time.afternoon": "mchana",
     "time.evening": "jioni",
-    "time.night": "usiku"
+    "time.night": "usiku",
+    "Verify your email": "Thibitisha barua pepe yako",
+    "Enter the OTP sent to your email to verify your account.": "Weka OTP iliyotumwa kwa barua pepe yako ili kuthibitisha akaunti yako.",
+    "We have sent an OTP to ": "Tumetuma nambari ya siri (OTP) kwa ",
+    ". Please enter the 6-digit code below to verify your email address.": ". Tafadhali weka nambari hiyo yenye tarakimu 6 hapa chini ili kuthibitisha barua pepe yako.",
+    "A new OTP has been sent to the email address you provided.": "Nambari mpya ya OTP imetumwa kwa barua pepe uliyotoa.",
+    "OTP Code": "Nambari ya OTP",
+    "Verify Email": "Thibitisha Barua Pepe",
+    "Resend OTP": "Tuma OTP Tena",
+    "The provided OTP is invalid or has expired.": "Nambari ya OTP uliyoweka si sahihi au muda wake umekwisha.",
+    "Failed to send OTP email. Please try again.": "Imeshindikana kutuma barua pepe ya OTP. Tafadhali jaribu tena.",
+    "Failed to send password reset email. Please try again.": "Imeshindikana kutuma barua pepe ya kuweka upya nenosiri. Tafadhali jaribu tena."
 }

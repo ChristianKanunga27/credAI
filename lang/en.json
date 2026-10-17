@@ -178,5 +178,16 @@
     "time.morning": "morning",
     "time.afternoon": "afternoon",
     "time.evening": "evening",
-    "time.night": "night"
+    "time.night": "night",
+    "Verify your email": "Verify your email",
+    "Enter the OTP sent to your email to verify your account.": "Enter the OTP sent to your email to verify your account.",
+    "We have sent an OTP to ": "We have sent an OTP to ",
+    ". Please enter the 6-digit code below to verify your email address.": ". Please enter the 6-digit code below to verify your email address.",
+    "A new OTP has been sent to the email address you provided.": "A new OTP has been sent to the email address you provided.",
+    "OTP Code": "OTP Code",
+    "Verify Email": "Verify Email",
+    "Resend OTP": "Resend OTP",
+    "The provided OTP is invalid or has expired.": "The provided OTP is invalid or has expired.",
+    "Failed to send OTP email. Please try again.": "Failed to send OTP email. Please try again.",
+    "Failed to send password reset email. Please try again.": "Failed to send password reset email. Please try again."
 }
