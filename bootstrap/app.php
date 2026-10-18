@@ -14,6 +14,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        // The app runs behind an nginx/load-balancer that terminates TLS. Without
+        // trusting the proxy headers, Laravel sees the request as plain HTTP while
+        // the browser is on HTTPS, so the session cookie is rejected and every
+        // POST (register, verify-email OTP, password reset) fails with a 419.
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO
+                | Request::HEADER_X_FORWARDED_AWS_ELB,
+        );
+
         $middleware->web(append: [SetLocale::class]);
         $middleware->alias(['role' => EnsureRole::class]);
         $middleware->validateCsrfTokens(except: ['fastlipa/webhook']);
