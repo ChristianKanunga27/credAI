@@ -9,10 +9,12 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Hash;
 #[Fillable(['name', 'email', 'password', 'role', 'phone', 'avatar_url', 'otp', 'otp_expires_at'])]
 #[Hidden(['password', 'remember_token'])]
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -41,18 +43,52 @@ class User extends Authenticatable
         return $this->hasMany(MobileMoneyTransaction::class);
     }
 
-    public function hasVerifiedEmail(): bool
+public function hasVerifiedEmail(): bool
     {
-        return true;
+        return ! is_null($this->email_verified_at);
     }
 
     public function markEmailAsVerified(): bool
     {
+        if ($this->hasVerifiedEmail()) {
+            return false;
+        }
+
+        $this->forceFill(['email_verified_at' => $this->freshTimestamp()])->save();
+
         return true;
     }
 
     public function sendEmailVerificationNotification(): void
     {
-        //
+        $this->generateAndSendOtp();
     }
+
+    public function generateAndSendOtp(): bool
+    {
+        try {
+            $otp = (string) mt_rand(100000, 999999);
+
+            $this->forceFill([
+                'otp' => Hash::make($otp),
+                'otp_expires_at' => now()->addMinutes(15),
+            ])->save();
+
+            $this->notifyNow(new \App\Notifications\VerifyEmailOtpNotification($otp));
+
+            return true;
+        } catch (\Throwable $e) {
+            $this->forceFill([
+                'otp' => null,
+                'otp_expires_at' => null,
+            ])->save();
+
+            \Illuminate\Support\Facades\Log::error('Failed to generate or send OTP verification email to '.$this->email.': '.$e->getMessage(), [
+                'exception' => $e,
+            ]);
+
+            return false;
+        }
+    }
+
 }

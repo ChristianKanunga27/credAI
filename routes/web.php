@@ -52,13 +52,13 @@ Route::post('/fastlipa/webhook', FastLipaWebhookController::class)
     ->name('fastlipa.webhook');
 
 Route::get('/dashboard', DashboardController::class)
-    ->middleware(['auth'])
+    ->middleware(['auth', 'verified'])
     ->name('dashboard');
 
 Route::get('/insurance/quote', [InsuranceQuoteController::class, 'create'])->name('insurance.quote');
 Route::post('/insurance/quote', [InsuranceQuoteController::class, 'store'])->name('insurance.quote.store');
 
-Route::middleware(['auth', 'role:individual,business'])->prefix('insurance')->name('insurance.')->group(function () {
+Route::middleware(['auth', 'role:individual,business', 'verified'])->prefix('insurance')->name('insurance.')->group(function () {
     Route::get('/card', InsuranceCardController::class)->name('card');
     Route::post('/payments', [InsuranceCheckoutController::class, 'storePayment'])->name('payments.store');
     Route::post('/loans', [InsuranceCheckoutController::class, 'storeLoanApplication'])->name('loans.store');
@@ -66,7 +66,7 @@ Route::middleware(['auth', 'role:individual,business'])->prefix('insurance')->na
     Route::post('/services/{service}/payments', [ProviderServiceController::class, 'pay'])->name('services.pay');
 });
 
-Route::middleware(['auth'])->group(function () {
+Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/transactions/mobile-money', [MobileMoneyTransactionController::class, 'index'])->name('transactions.mobile-money.index');
     Route::post('/transactions/sync', TransactionSyncController::class)->middleware('throttle:5,1')->name('transactions.sync');
     Route::get('/business/profile/create', [BusinessProfileController::class, 'create'])->name('business.create');
@@ -80,7 +80,7 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::middleware(['auth', 'role:admin', 'verified'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', AdminDashboardController::class)->name('dashboard');
     Route::get('/providers', [AdminDashboardController::class, 'providers'])->name('providers');
     Route::get('/policies', [AdminDashboardController::class, 'policies'])->name('policies');
@@ -95,7 +95,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::patch('/loans/{application}/review', [AdminDashboardController::class, 'reviewLoan'])->name('loans.review');
 });
 
-Route::middleware(['auth', 'role:insurer,provider,hospital'])->prefix('provider')->name('provider.')->group(function () {
+Route::middleware(['auth', 'role:insurer,provider,hospital', 'verified'])->prefix('provider')->name('provider.')->group(function () {
     Route::get('/dashboard', [ProviderDashboardController::class, 'index'])->name('dashboard');
     Route::get('/services', [ProviderServiceController::class, 'manage'])->name('services.index');
     Route::put('/profile', [ProviderDashboardController::class, 'store'])->name('profile.store');

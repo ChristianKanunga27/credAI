@@ -22,7 +22,7 @@ test('new users can register and receive email verification otp', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('verification.notice', absolute: false));
 
     $user = User::where('email', 'test@example.com')->first();
     expect($user)->not->toBeNull();
@@ -45,5 +45,5 @@ test('registration redirects to dashboard after registration', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('dashboard', absolute: false));
+    $response->assertRedirect(route('verification.notice', absolute: false));
 });

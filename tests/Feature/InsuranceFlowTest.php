@@ -9,7 +9,7 @@ test('individual users can register with the insurance journey', function () {
         'password_confirmation' => 'Password123!',
     ]);
 
-    $response->assertRedirect('/dashboard');
+    $response->assertRedirect('/verify-email');
     $this->assertDatabaseHas('users', [
         'email' => 'amina@example.com',
         'role' => 'individual',
