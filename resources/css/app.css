@@ -594,3 +594,21 @@ a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
     .ai-assistant-widget--expanded .ai-assistant-messages { padding: 16px; }
     .ai-assistant-widget--expanded .ai-assistant-form { padding: 12px; }
 }
+
+.dark .workspace-topbar-context { color: #e6edf7; }
+.dark .sidebar-section-label { color: #6f809c; }
+.dark .sidebar-account-copy small { color: #8a9bb0; }
+.dark .metric-label { color: #9aa7bd; }
+.dark .metric-note { color: #9aa7bd; }
+.dark .empty-copy { color: #9aa7bd; }
+.dark .eyebrow { color: #8a9bb0; }
+.dark .page-subtitle { color: #9aa7bd; }
+.dark .form-cancel { color: #aebbd0; }
+.dark .admin-row strong { color: #e6edf7; }
+.dark .admin-row small { color: #a4b1c3; }
+.dark .admin-shortcut-grid a { color: #e6edf7; }
+.dark .status-pill--soft { background: #1d344b; color: #aebbd0; }
+.dark .status-pill--green { background: #1a3440; color: #8dd0dc; }
+.dark .status-pill--amber { background: #2f2a1a; color: #d9b57e; }
+.dark .workspace-error { background: #2f1a1a; border-color: #4d2a2a; color: #f3c2c2; }
+.dark .workspace-status { background: #1a2f1a; border-color: #2a4d2a; color: #c2f3c2; }
