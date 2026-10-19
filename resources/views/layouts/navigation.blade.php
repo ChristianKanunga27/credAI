@@ -65,15 +65,16 @@
             <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
             <span>{{ __('Profile and settings') }}</span>
         </a>
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <button type="submit" class="sidebar-link w-full text-left" style="border: none; background: none; cursor: pointer;">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg>
+                <span>{{ __('Log out') }}</span>
+            </button>
+        </form>
         <div class="sidebar-account">
             <span class="sidebar-avatar" aria-hidden="true">{{ mb_strtoupper(mb_substr($user?->name ?? 'C', 0, 1)) }}</span>
             <span class="sidebar-account-copy"><strong>{{ $user?->name }}</strong><small>{{ ucfirst($userRole ?? '') }}</small></span>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="sidebar-logout" aria-label="{{ __('Log out') }}" title="{{ __('Log out') }}">
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 17l5-5-5-5M15 12H3"/><path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6"/></svg>
-                </button>
-            </form>
         </div>
     </aside>
 </div>

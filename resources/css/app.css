@@ -634,3 +634,23 @@ a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 .dark .form-intro h2 { color: #e6edf7 !important; }
 .dark .form-intro p { color: #a4b1c3 !important; }
 .dark .form-intro .eyebrow { color: #8a9bb0 !important; }
+
+.dark .profile-intro p { color: #a4b1c3 !important; }
+.dark .profile-intro h1 { color: #e6edf7 !important; }
+.dark .profile-card h2 { color: #e6edf7 !important; }
+.dark .profile-card p { color: #a4b1c3 !important; }
+.dark .profile-card label { color: #e6edf7 !important; }
+.dark .profile-card input,
+.dark .profile-card select,
+.dark .profile-card textarea {
+    background: #101a29 !important;
+    border-color: #34455d !important;
+    color: #e6edf7 !important;
+}
+.dark .profile-card input::placeholder,
+.dark .profile-card textarea::placeholder { color: #7f91a8 !important; }
+.dark .profile-card .text-gray-600 { color: #9aa7bd !important; }
+.dark .profile-card .text-gray-900 { color: #e6edf7 !important; }
+
+.dark .profile-card--danger { border-color: #4d2a2a !important; }
+.dark .profile-card--danger button { background: #b85b4c !important; }
