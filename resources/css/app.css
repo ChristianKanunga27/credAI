@@ -630,3 +630,7 @@ a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 .dark .app-page-header-copy .text-gray-600 { color: #9aa7bd !important; }
 .app-page-header-copy .text-gray-900 { color: #111827 !important; }
 .dark .app-page-header-copy .text-gray-900 { color: #e6edf7 !important; }
+
+.dark .form-intro h2 { color: #e6edf7 !important; }
+.dark .form-intro p { color: #a4b1c3 !important; }
+.dark .form-intro .eyebrow { color: #8a9bb0 !important; }
