@@ -1,61 +1,55 @@
 <x-app-layout>
     <x-slot name="header">
-        <div>
-            <p class="eyebrow">CredHealth</p>
-            <h1 class="page-title">{{ __('Administration overview') }}</h1>
-            <p class="page-subtitle">{{ __('Monitor the platform and open a dedicated workspace for each area.') }}</p>
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+                <p class="text-sm font-medium text-gray-500">Admin</p>
+                <h1 class="text-2xl sm:text-3xl font-semibold text-gray-900 mt-1">{{ __('Administration Dashboard') }}</h1>
+                <p class="text-gray-600 mt-2 text-sm">Platform overview and key metrics</p>
+            </div>
         </div>
     </x-slot>
 
-    <div class="dashboard-shell admin-shell">
-        <section class="metric-grid" id="admin-overview" aria-label="{{ __('System overview') }}">
-            <a class="metric-card admin-overview-card" href="{{ route('admin.providers') }}">
-                <span class="metric-label">{{ __('Insurance providers') }}</span>
-                <strong>{{ number_format($providerCount) }}</strong>
-                <span class="metric-note">{{ __(':count awaiting review', ['count' => $pendingProviders]) }}</span>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <a href="{{ route('admin.providers') }}" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:shadow-md transition">
+                <p class="text-sm text-gray-500">Insurance Providers</p>
+                <p class="text-2xl font-semibold text-gray-900 mt-1">{{ number_format($providerCount) }}</p>
+                <p class="text-xs text-amber-600 mt-2">{{ $pendingProviders }} pending</p>
             </a>
-            <a class="metric-card metric-card--accent admin-overview-card" href="{{ route('admin.policies') }}">
-                <span class="metric-label">{{ __('Policies') }}</span>
-                <strong>{{ number_format($policyCount) }}</strong>
-                <span class="metric-note">{{ __(':count active', ['count' => $activePolicies]) }}</span>
+            <a href="{{ route('admin.policies') }}" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:shadow-md transition">
+                <p class="text-sm text-gray-500">Policies</p>
+                <p class="text-2xl font-semibold text-gray-900 mt-1">{{ number_format($policyCount) }}</p>
+                <p class="text-xs text-green-600 mt-2">{{ $activePolicies }} active</p>
             </a>
-            <a class="metric-card admin-overview-card" href="{{ route('admin.claims') }}">
-                <span class="metric-label">{{ __('Claims') }}</span>
-                <strong>{{ number_format($claimCount) }}</strong>
-                <span class="metric-note">{{ __(':count awaiting review', ['count' => $pendingClaims]) }}</span>
+            <a href="{{ route('admin.claims') }}" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:shadow-md transition">
+                <p class="text-sm text-gray-500">Claims</p>
+                <p class="text-2xl font-semibold text-gray-900 mt-1">{{ number_format($claimCount) }}</p>
+                <p class="text-xs text-amber-600 mt-2">{{ $pendingClaims }} pending</p>
             </a>
-            <a class="metric-card metric-card--accent admin-overview-card" href="{{ route('admin.payments') }}">
-                <span class="metric-label">{{ __('Payment requests') }}</span>
-                <strong>{{ number_format($paymentCount) }}</strong>
-                <span class="metric-note">{{ __(':pending pending · :paid successfully confirmed', ['pending' => $pendingPayments, 'paid' => $successfulPayments]) }}</span>
+            <a href="{{ route('admin.payments') }}" class="bg-white rounded-lg shadow-sm border border-gray-200 p-5 hover:shadow-md transition">
+                <p class="text-sm text-gray-500">Payments</p>
+                <p class="text-2xl font-semibold text-gray-900 mt-1">{{ number_format($paymentCount) }}</p>
+                <p class="text-xs text-gray-500 mt-2">{{ $pendingPayments }} pending · {{ $successfulPayments }} paid</p>
             </a>
-            <a class="metric-card admin-overview-card" href="{{ route('admin.loans') }}">
-                <span class="metric-label">{{ __('Loan applications') }}</span>
-                <strong>{{ number_format($loanCount) }}</strong>
-                <span class="metric-note">{{ __(':count pending', ['count' => $pendingLoans]) }}</span>
-            </a>
-            <article class="metric-card">
-                <span class="metric-label">{{ __('Registered users') }}</span>
-                <strong>{{ number_format($userCount) }}</strong>
-                <span class="metric-note">{{ __('All platform accounts') }}</span>
-            </article>
-        </section>
-
-        <section class="surface-card admin-overview-shortcuts" aria-labelledby="admin-shortcuts-heading">
-            <div class="section-heading">
-                <div>
-                    <span class="eyebrow">{{ __('Administration') }}</span>
-                    <h3 id="admin-shortcuts-heading">{{ __('Go to a workspace') }}</h3>
-                </div>
+            <div class="bg-white rounded-lg shadow-sm border border-gray-200 p-5">
+                <p class="text-sm text-gray-500">Registered Users</p>
+                <p class="text-2xl font-semibold text-gray-900 mt-1">{{ number_format($userCount) }}</p>
             </div>
-            <nav class="admin-shortcut-grid" aria-label="{{ __('Admin workspaces') }}">
-                <a href="{{ route('admin.providers') }}">{{ __('Review providers') }} <span aria-hidden="true">&rarr;</span></a>
-                <a href="{{ route('admin.policies') }}">{{ __('Manage policies') }} <span aria-hidden="true">&rarr;</span></a>
-                <a href="{{ route('admin.claims') }}">{{ __('Review claims') }} <span aria-hidden="true">&rarr;</span></a>
-                <a href="{{ route('admin.payments') }}">{{ __('Process payments') }} <span aria-hidden="true">&rarr;</span></a>
-                <a href="{{ route('admin.loans') }}">{{ __('Review loan applications') }} <span aria-hidden="true">&rarr;</span></a>
-                <a href="{{ route('admin.activity') }}">{{ __('View activity log') }} <span aria-hidden="true">&rarr;</span></a>
-            </nav>
-        </section>
+        </div>
+
+        <div class="bg-white rounded-lg shadow-sm border border-gray-200">
+            <div class="px-5 py-4 border-b border-gray-200">
+                <h2 class="text-lg font-semibold text-gray-900">Quick Links</h2>
+                <p class="text-sm text-gray-500">Admin workspaces</p>
+            </div>
+            <div class="px-5 py-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                <a href="{{ route('admin.providers') }}" class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">Review Providers</a>
+                <a href="{{ route('admin.policies') }}" class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">Manage Policies</a>
+                <a href="{{ route('admin.claims') }}" class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">Review Claims</a>
+                <a href="{{ route('admin.payments') }}" class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">Process Payments</a>
+                <a href="{{ route('admin.loans') }}" class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">Review Loans</a>
+                <a href="{{ route('admin.activity') }}" class="px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 rounded-md">Activity Log</a>
+            </div>
+        </div>
     </div>
 </x-app-layout>
