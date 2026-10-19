@@ -615,3 +615,18 @@ a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 
 .dark .workspace-main { background: #101a29; }
 .workspace-main { background: #f8fafc; }
+
+.dark .app-page-header-copy .eyebrow,
+.dark .app-page-header-copy .text-sm,
+.dark .app-page-header-copy h1,
+.dark .app-page-header-copy h2,
+.dark .app-page-header-copy p { color: #e6edf7 !important; }
+
+.app-page-header-copy .text-gray-500,
+.app-page-header-copy .text-sm.font-medium { color: #4a5568 !important; }
+.dark .app-page-header-copy .text-gray-500,
+.dark .app-page-header-copy .text-sm.font-medium { color: #a4b1c3 !important; }
+.app-page-header-copy .text-gray-600 { color: #4a5568 !important; }
+.dark .app-page-header-copy .text-gray-600 { color: #9aa7bd !important; }
+.app-page-header-copy .text-gray-900 { color: #111827 !important; }
+.dark .app-page-header-copy .text-gray-900 { color: #e6edf7 !important; }
