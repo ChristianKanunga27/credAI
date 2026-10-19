@@ -612,3 +612,6 @@ a, button, input, select, textarea { -webkit-tap-highlight-color: transparent; }
 .dark .status-pill--amber { background: #2f2a1a; color: #d9b57e; }
 .dark .workspace-error { background: #2f1a1a; border-color: #4d2a2a; color: #f3c2c2; }
 .dark .workspace-status { background: #1a2f1a; border-color: #2a4d2a; color: #c2f3c2; }
+
+.dark .workspace-main { background: #101a29; }
+.workspace-main { background: #f8fafc; }
